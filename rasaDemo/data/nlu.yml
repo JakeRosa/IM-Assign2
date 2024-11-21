@@ -1,0 +1,208 @@
+version: "3.1"
+nlu:
+- intent: greet
+  examples: |
+    - Oi Calendário
+    - Bom dia, Calendário
+    - Boa tarde, Calendário
+    - Boa noite, Calendário
+    - Olá Calendário
+    - Olá Calendário
+    - olá
+    - olá calendário
+    - olá calendário
+    
+- intent: goodbye
+  examples: |
+    - Xau, Calendário
+    - Adeus, Calendário
+    - Até logo, Calendário
+    - Boa noite, Calendário
+    - Até amanhã, Calendário
+
+- intent: affirm
+  examples: |
+    - Sim
+    - Claro
+    - Parece-me bem
+    - Correto
+    - Okay
+    - Ok
+    - sim
+
+- intent: deny
+  examples: |
+    - Não
+    - Nope
+    - Nunca
+    - Acho que não
+    - Não gosto assim
+    - Nem por isso
+  
+- intent: list_all_events
+  examples: |
+    - Lista todos os eventos
+    - Podes listar todos os eventos?
+    - Mostra todos os eventos
+    - Quero ver todos os eventos
+    - Apresenta a lista completa de eventos
+    - Tenho eventos marcados? Mostra todos
+    - Podes mostrar todos os eventos?
+    - Diz-me todos os eventos marcados
+    - Quero saber todos os eventos marcados
+  
+  # criar eventos
+
+  # eliminar eventos
+- intent: delete_event
+  examples: |
+    - Quero eliminar o evento [Jantar com amigos](event) de [11](dia) de [janeiro](mês) de [2025](ano)
+    - Apaga o evento [Consulta médica](event) de [15](dia) de [fevereiro](mês) de [2024](ano)
+    - Remove o evento [Reunião de equipa](event) no dia [20](dia) de [março](mês) de [2024](ano)
+    - Quero que elimines o evento [Treino de futebol](event) de [10](dia) de [abril](mês) de [2024](ano)
+    - Elimina o evento [Aniversário do João](event) do dia [25](dia) de [maio](mês) de [2024](ano)
+    - Preciso apagar o evento [Workshop de fotografia](event) do dia [5](dia) de [junho](mês) de [2024](ano)
+    - Elimina o evento [Live de lançamento](event) no dia [12](dia) de [julho](mês) de [2024](ano)
+    - Apaga o evento [Viagem para Lisboa](event) de [1](dia) de [agosto](mês) de [2024](ano)
+    - Remove o evento [Cinema com amigos](event) do dia [18](dia) de [setembro](mês) de [2024](ano)
+    - Apaga o evento [Exame final de matemática](event) de [30](dia) de [outubro](mês) de [2024](ano)
+    - Quero eliminar o evento [Jantar com família](event) no dia [8](dia) de [novembro](mês) de [2024](ano)
+    - Remove o evento [Aula de yoga](event) marcado para [15](dia) de [dezembro](mês) de [2024](ano)
+
+  # eventos de uma data
+- intent: list_events_of_a_day
+  examples: |
+    - Lista todos os eventos do [25](dia) de [dezembro](mês) de [2024](ano)
+    - Quais são os eventos do dia [1](dia) de [janeiro](mês) de [2024](ano)?
+    - Mostra os eventos do [15](dia) de [fevereiro](mês) de [2025](ano)
+    - Quero ver os eventos do dia [10](dia) de [março](mês) de [2024](ano)
+    - Diz-me os eventos do [20](dia) de [abril](mês) de [2024](ano)
+    - Que eventos estão marcados para [30](dia) de [maio](mês) de [2024](ano)?
+    - Mostra-me os eventos de [5](dia) de [junho](mês) de [2024](ano)
+    - Lista os eventos agendados para o dia [12](dia) de [julho](mês) de [2024](ano)
+    - Quais são os eventos programados para [1](dia) de [agosto](mês) de [2024](ano)?
+    - Tens eventos marcados para [18](dia) de [setembro](mês) de [2024](ano)?
+    - Quero saber o que está no calendário no dia [30](dia) de [outubro](mês) de [2024](ano)
+    - Mostra os eventos do dia [8](dia) de [novembro](mês) de [2024](ano)
+    - Que eventos tenho no dia [15](dia) de [dezembro](mês) de [2024](ano)?
+
+- intent: list_holidays
+  examples: |
+    - Lista todos os feriados portugueses
+    - Quais são os feriados em Portugal?
+    - Mostra os feriados em Portugal
+    - Diz-me os feriados portugueses
+    - Consegues listar os feriados em Portugal?
+    - Mostra-me os feriados portugueses
+    - Sabes quais são os feriados de Portugal?
+    - Quero saber os feriados nacionais
+    - Há feriados em Portugal? Mostra aí
+    - Mostra lá os feriados de Portugal
+    - Quais são os próximos feriados em Portugal?
+    - Tens aí os feriados nacionais?
+    - Mostra os feriados portugueses para mim
+    - Diz-me os feriados que vêm aí
+    - Há feriados nos próximos tempos? Mostra-me
+
+  # alterar data de evento
+
+- intent: list_birthdays
+  examples: |
+    - Quero ver a lista de aniversários
+    - Que aniversários tenho marcados?
+    - Mostra-me os aniversários
+    - Tens aí os aniversários?
+    - Diz-me os aniversários que vêm aí
+    - Quais são os aniversários marcados?
+    - Mostra lá os aniversários
+    - Que aniversários há nos próximos tempos?
+    - Consegues mostrar os aniversários?
+    - Quais são os próximos aniversários?
+    - Tens algum aniversário na lista?
+    - Mostra os aniversários na agenda
+    - Que aniversários estão marcados?
+    - Diz-me os próximos aniversários
+    - Tens aniversários para me mostrar?
+    - Quem são os próximos aniversariantes?
+    - Mostra-me as pessoas que fazem anos
+
+# cria um calendário
+- intent: create_calendar
+  examples: |
+    - Cria um novo calendário com nome [Calendário de reuniões](calendar)
+    - Faz um calendário chamado [Calendário de férias](calendar)
+    - Quero criar o calendário [Calendário escolar](calendar)
+    - Preciso de criar o calendário [Calendário de tarefas](calendar)
+    - Cria o calendário [Calendário da família](calendar)
+    - Adiciona um calendário chamado [Calendário de aniversários](calendar)
+    - Faz o calendário [Calendário de consultas médicas](calendar)
+    - Cria um calendário chamado [Calendário da universidade](calendar)
+
+# elimina um calendário
+- intent: delete_calendar
+  examples: |
+    - Apaga o calendário chamado [Calendário pessoal](calendar)
+    - Elimina o [Calendário de reuniões](calendar)
+    - Remove o [Calendário de férias](calendar)
+    - Quero apagar o calendário [Calendário escolar](calendar)
+    - Faz a eliminação do [Calendário de tarefas](calendar)
+    - Quero que apagues o calendário [Calendário da equipa](calendar)
+    - Elimina o calendário chamado [Calendário de projetos](calendar)
+    - Apaga o [Calendário de aniversários](calendar)
+    - Remove o calendário [Calendário da universidade](calendar)
+    - Preciso que apagues o calendário [Calendário de consultas médicas](calendar)
+
+# adiciona um evento a um calendário
+- intent: add_event_to_calendar
+  examples: |
+    - Adiciona o evento [Reunião de equipa](event) no dia [15](dia) de [novembro](mês) de [2024](ano) ao [Calendário do trabalho](calendar)
+    - Quero adicionar o evento [Aniversário do João](event) no dia [12](dia) de [dezembro](mês) de [2024](ano) ao [Calendário de aniversários](calendar)
+    - Coloca o evento [Consulta médica](event) no dia [22](dia) de [novembro](mês) de [2024](ano) no [Calendário de consultas médicas](calendar)
+    - Adiciona o evento [Jantar com amigos](event) no dia [30](dia) de [novembro](mês) de [2024](ano) ao [Calendário pessoal](calendar)
+    - Marca o evento [Workshop de fotografia](event) no dia [1](dia) de [dezembro](mês) de [2024](ano) no [Calendário de projetos](calendar)
+    - Quero pôr o evento [Treino de futebol](event) no dia [18](dia) de [novembro](mês) de [2024](ano) no [Calendário de desporto](calendar)
+    - Insere o evento [Live de lançamento](event) no dia [5](dia) de [dezembro](mês) de [2024](ano) no [Calendário de marketing](calendar)
+    - Coloca o evento [Viagem para Lisboa](event) no dia [10](dia) de [dezembro](mês) de [2024](ano) no [Calendário de férias](calendar)
+    - Adiciona o evento [Exame final de matemática](event) no dia [25](dia) de [novembro](mês) de [2024](ano) ao [Calendário escolar](calendar)
+    - Insere o evento [Cinema com amigos](event) no dia [2](dia) de [dezembro](mês) de [2024](ano) no [Calendário pessoal](calendar)
+
+# listar eventos de um calendário
+- intent: list_events_in_calendar
+  examples: |
+    - Lista todos os eventos do [Calendário pessoal](calendar)
+    - Mostra os eventos do [Calendário do trabalho](calendar)
+    - Quero ver os eventos no [Calendário de aniversários](calendar)
+    - Diz-me os eventos que estão no [Calendário da equipa](calendar)
+    - Quais são os eventos marcados no [Calendário de projetos](calendar)?
+    - Mostra todos os eventos no [Calendário da família](calendar)
+    - Preciso de ver os eventos no [Calendário de férias](calendar)
+    - Mostra os eventos no [Calendário escolar](calendar)
+    - Lista os eventos do [Calendário de reuniões](calendar)
+    - Que eventos estão no [Calendário de desporto](calendar)?
+    - Mostra os eventos agendados no [Calendário de tarefas](calendar)
+    - Quero saber os eventos no [Calendário de exames](calendar)
+    - Diz-me todos os eventos no [Calendário de consultas médicas](calendar)
+    - Tens os eventos do [Calendário de ginásio](calendar)?
+    - Mostra todos os eventos do [Calendário da universidade](calendar)
+    - Lista os eventos que estão no [Calendário das apresentações escolares](calendar)
+
+
+# Regex para dias
+- regex: dia
+  examples: |
+    - \b(0?[1-9]|[12][0-9]|3[01])\b
+
+# Regex para meses
+- regex: mês
+  examples: |
+    - \b(Janeiro|Fevereiro|Março|Abril|Maio|Junho|Julho|Agosto|Setembro|Outubro|Novembro|Dezembro)\b
+
+# Regex para anos
+- regex: ano
+  examples: |
+    - \b(19|20)\d{2}\b
+
+# Regex para horas
+- regex: horas
+  examples: |
+    - \b([01]?[0-9]|2[0-3]):[0-5][0-9]\b

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "ano",
+    "pattern": "\\b(19|20)\\d{2}\\b"
+  },
+  {
+    "name": "dia",
+    "pattern": "\\b(0?[1-9]|[12][0-9]|3[01])\\b"
+  },
+  {
+    "name": "horas",
+    "pattern": "\\b([01]?[0-9]|2[0-3]):[0-5][0-9]\\b"
+  },
+  {
+    "name": "mês",
+    "pattern": "\\b(Janeiro|Fevereiro|Março|Abril|Maio|Junho|Julho|Agosto|Setembro|Outubro|Novembro|Dezembro)\\b"
+  },
+  {
+    "name": "calendar",
+    "pattern": "(\\bCalendário\\ pessoal\\b|\\bCalendário\\ do\\ trabalho\\b|\\bCalendário\\ de\\ aniversários\\b|\\bCalendário\\ da\\ equipa\\b|\\bCalendário\\ de\\ projetos\\b|\\bCalendário\\ da\\ família\\b|\\bCalendário\\ de\\ férias\\b|\\bCalendário\\ escolar\\b|\\bCalendário\\ de\\ eventos\\ públicos\\b|\\bCalendário\\ de\\ reuniões\\b|\\bCalendário\\ de\\ desporto\\b|\\bCalendário\\ de\\ tarefas\\b|\\bCalendário\\ de\\ exames\\b|\\bCalendário\\ de\\ consultas\\ médicas\\b|\\bCalendário\\ de\\ ginásio\\b|\\bCalendário\\ da\\ universidade\\b|\\bCalendário\\ das\\ apresentações\\ escolares\\b)"
+  },
+  {
+    "name": "event",
+    "pattern": "(\\bReunião\\ de\\ equipa\\b|\\bConsulta\\ médica\\b|\\bAniversário\\ da\\ Maria\\b|\\bJantar\\ com\\ amigos\\b|\\bViagem\\ para\\ Lisboa\\b|\\bEntrega\\ do\\ relatório\\ final\\b|\\bTreino\\ de\\ pernas\\b|\\bApresentação\\b|\\bWorkshop\\ de\\ programação\\b|\\bReunião\\ com\\ o\\ cliente\\b|\\bFesta\\ de\\ aniversário\\ do\\ João\\b|\\bTreino\\ de\\ futebol\\b|\\bCinema\\ com\\ amigos\\b|\\bReunião\\ de\\ brainstorming\\b|\\bExame\\ final\\ de\\ Cálculo\\b|\\bAlmoço\\ com\\ os\\ colegas\\b|\\bDentista\\b|\\bApresentação\\ de\\ resultados\\b|\\bReunião\\ de\\ revisão\\ trimestral\\b|\\bConferência\\ anual\\ de\\ tecnologia\\b|\\bAniversário\\ do\\ Pedro\\b|\\bCaminhada\\ no\\ parque\\b|\\bAula\\ de\\ piano\\b|\\bSessão\\ de\\ fisioterapia\\b|\\bExame\\ de\\ condução\\b|\\bConsulta\\ com\\ o\\ psicólogo\\b|\\bEntrevista\\ com\\ empresas\\b|\\bReunião\\ de\\ condomínio\\b|\\bPlaneamento\\ da\\ viagem\\ de\\ férias\\b|\\bEntrega\\ do\\ projeto\\b|\\bPiquenique\\ com\\ a\\ família\\b|\\bSessão\\ de\\ treino\\b)"
+  }
+]

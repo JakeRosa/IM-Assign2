@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Google Calendar Voice Assistant</title>
+
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      --indicator-color: black;
+      background: #fff;
+      /*radial-gradient(#fff 75%, var(--indicator-color));*/
+      min-height: 100vh;
+      color: burlywood;
+      font-family: Poppins;
+      margin: 0;
+      padding: 0;
+    }
+
+    .mic {
+      width: 150px;
+    }
+
+    .container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      border-radius: 10px;
+      background-color: #f0f0f0;
+    }
+
+    .responseText {
+      border: solid 2px #8ea7cf;
+      margin: 2%;
+      color: #41683a;
+    }
+
+    .bottomNav {
+
+      position: absolute;
+      bottom: 2%;
+      width: 95%;
+    }
+
+    .recognized {
+      font-size: x-large;
+    }
+  </style>
+</head>
+
+<body>
+  <h1 style="background-color: #4F5D73; margin: 0;">Google Calendar Voice Assistant</h1>
+  <!-- <p>Click the button below and start speaking.</p>
+    <button id="start-btn">Start</button>
+    -->
+
+
+
+
+
+
+  <div class="bottomNav">
+    <div id="response" class="" style="">d</div>
+    <div class="container" style="border: solid 2px #4F5D73;margin: 2%;">
+
+      <svg class="mic" id="mic" version="1.1" xmlns="http://www.w3.org/2000/svg"
+        xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100"
+        style="enable-background:new 0 0 100 100;" xml:space="preserve">
+        <style type="text/css">
+          .st01 {
+            fill: #4F5D73;
+          }
+
+          .st1 {
+            opacity: 0.2;
+          }
+
+          .st2 {
+            fill: #231F20;
+          }
+
+          .st3 {
+            fill: #4F5D73;
+          }
+
+          .st4 {
+            fill: #FFFFFF;
+          }
+        </style>
+        <defs>
+          <filter id="f1" x="0" y="0">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="1" />
+          </filter>
+        </defs>
+        <circle class="st0" cx="50" cy="50" r="32" />
+        <g id="Layer_1" transform="translate(18,18)">
+          <g class="st1">
+            <path class="st2"
+              d="M32,41.5c3.3,0,6-2.7,6-6v-18c0-3.3-2.7-6-6-6s-6,2.7-6,6v18C26,38.8,28.7,41.5,32,41.5z" />
+          </g>
+          <g class="st1">
+            <path class="st2" d="M32,48.2c-7.2,0-13-5.8-13-13v-3.8c0-0.8,0.7-1.5,1.5-1.5s1.5,0.7,1.5,1.5v3.8c0,5.5,4.5,10,10,10
+               s10-4.5,10-10v-3.8c0-0.8,0.7-1.5,1.5-1.5s1.5,0.7,1.5,1.5v3.8C45,42.4,39.2,48.2,32,48.2z" />
+          </g>
+          <g class="st1">
+            <path class="st2"
+              d="M32,55c-0.8,0-1.5-0.7-1.5-1.5v-6c0-0.8,0.7-1.5,1.5-1.5s1.5,0.7,1.5,1.5v6C33.5,54.3,32.8,55,32,55z" />
+          </g>
+          <g class="st1">
+            <path class="st2"
+              d="M37,56H27c-0.8,0-1.5-0.7-1.5-1.5S26.2,53,27,53h10c0.8,0,1.5,0.7,1.5,1.5S37.8,56,37,56z" />
+          </g>
+          <path class="st3" d="M32,39.5c3.3,0,6-2.7,6-6v-18c0-3.3-2.7-6-6-6s-6,2.7-6,6v18C26,36.8,28.7,39.5,32,39.5z" />
+          <path class="st4" d="M32,46.2c-7.2,0-13-5.8-13-13v-3.8c0-0.8,0.7-1.5,1.5-1.5s1.5,0.7,1.5,1.5v3.8c0,5.5,4.5,10,10,10
+             s10-4.5,10-10v-3.8c0-0.8,0.7-1.5,1.5-1.5s1.5,0.7,1.5,1.5v3.8C45,40.4,39.2,46.2,32,46.2z" />
+          <path class="st4"
+            d="M32,53c-0.8,0-1.5-0.7-1.5-1.5v-6c0-0.8,0.7-1.5,1.5-1.5s1.5,0.7,1.5,1.5v6C33.5,52.3,32.8,53,32,53z" />
+          <path class="st4"
+            d="M37,54H27c-0.8,0-1.5-0.7-1.5-1.5S26.2,51,27,51h10c0.8,0,1.5,0.7,1.5,1.5S37.8,54,37,54z" />
+        </g>
+      </svg>
+
+      <div class="recognized" style="display: inline; vertical-align: center; top: auto;bottom: auto; width: 600px;"
+        id="transcript"></div>
+
+    </div>
+  </div>
+
+
+
+  <div id="energy"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@latest/dist/svg.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.7/dist/bundle.min.js"></script>
+  <script src="js/mmi.js"></script>
+  <script src="js/globals.js"></script>
+  <script src="js/jquery-3.6.4.min.js"></script>
+  <script src="js/webtoolkit.utf8.js"></script>
+
+
+  <script type="text/javascript" src="js/recorder.js"></script>
+  <script type="text/javascript" src="js/microphone.js"></script>
+  <script type="text/javascript" src="kws__/edge-impulse-standalone.js"></script>
+  <script type="text/javascript" src="kws__/run-impulse.js"></script>
+
+  <script type="module">
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = 'pt-PT';
+
+    var circle = SVG.find('.st0');
+    const transcriptDiv = document.getElementById('transcript');
+    const energyDiv = document.getElementById('energy');
+
+    recognition.onerror = function (event) {
+      console.error("REC ERROR" + event.error);
+      transcriptDiv.innerHTML = "Clique no microfone para começar a falar.";
+      circle.animate(20, 0, 'now').attr({ fill: '#000' });
+    };
+
+    recognition.onresult = function (event) {
+      var interim_transcript = '';
+      var final_transcript = '';
+
+      for (var i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          energyDiv.textContent += event.results[i][0].confidence;
+          final_transcript = event.results[i][0].transcript.trim();
+
+          if (final_transcript.length > 2) {
+            final_transcript = final_transcript.charAt(0).toUpperCase() + final_transcript.slice(1);
+            transcriptDiv.innerHTML = "<span style='color:#00b44e'><b>" + final_transcript + "</b></span>";
+            sendMMI(final_transcript);
+            circle.animate(20, 0, 'now').attr({ fill: '#000' });
+          } else {
+            transcriptDiv.innerHTML = "<span style='color:#ff9494'><b>Desculpe, não consegui entender.</b></span>";
+          }
+
+          setTimeout(function () {
+            transcriptDiv.innerHTML = "Clique no microfone para começar a falar.";
+          }, 3000);
+        } else {
+          transcriptDiv.textContent = event.results[i][0].transcript.trim().toLowerCase();
+        }
+      }
+    };
+
+    document.getElementById('mic').addEventListener('click', function () {
+      recognition.start();
+      transcriptDiv.textContent = "...";
+      circle.animate(20, 0, 'now').attr({ fill: '#00a431' });
+    });
+
+    function formatDate(day, month, year) {
+      const monthMap = {
+        "janeiro": "01",
+        "fevereiro": "02",
+        "março": "03",
+        "abril": "04",
+        "maio": "05",
+        "junho": "06",
+        "julho": "07",
+        "agosto": "08",
+        "setembro": "09",
+        "outubro": "10",
+        "novembro": "11",
+        "dezembro": "12"
+      };
+
+      // Adicionar zero à esquerda para dias e meses com 1 dígito
+      const formattedDay = day.length === 1 ? `0${day}` : day;
+      const formattedMonth = monthMap[month.toLowerCase()] || "00"; // "00" como fallback para erros
+
+      return `${year}-${formattedMonth}-${formattedDay}`;
+    }
+
+    function sendMMI(final_transcript) {
+      var obj = new Object();
+      obj.text = final_transcript;
+      $.post("http://localhost:5005/model/parse", JSON.stringify(obj), function (data) {
+        console.log(data);
+
+        message = {};
+
+        if (data.intent.name == 'list_all_events') {
+          var message = { 'intent': 'list_all_events' };
+        }
+
+        // date must be in YYYY-MM-DD format
+        if (data.intent.name == 'delete_event') {
+          let event = "", day = "", month = "", year = "";
+          for (let i = 0; i < data.entities.length; i++) {
+            if (data.entities[i].entity == 'event') event = data.entities[i].value;
+            if (data.entities[i].entity == 'dia') day = data.entities[i].value;
+            if (data.entities[i].entity == 'mês') month = data.entities[i].value;
+            if (data.entities[i].entity == 'ano') year = data.entities[i].value;
+          }
+
+          const formattedDate = formatDate(day, month, year);
+          var message = { 'intent': 'delete_event', 'event': event, 'date': formattedDate };
+        }
+
+        // date must be in YYYY-MM-DD format
+        if (data.intent.name == 'list_events_of_a_day') {
+          let day = "", month = "", year = "";
+          for (let i = 0; i < data.entities.length; i++) {
+            if (data.entities[i].entity == 'dia') day = data.entities[i].value;
+            if (data.entities[i].entity == 'mês') month = data.entities[i].value;
+            if (data.entities[i].entity == 'ano') year = data.entities[i].value;
+          }
+
+          const formattedDate = formatDate(day, month, year);
+          var message = { 'intent': 'list_events_of_a_day', 'date': formattedDate };
+        }
+
+        if (message != {}) {
+          var messaget = btoa(unescape(encodeURIComponent(final_transcript)));
+          var result = { "recognized": ["SPEECH", "SPEECHIN", "APP"], "text": messaget, "nlu": message };
+          mmiCli_1.sendToIM(new LifeCycleEvent("SPEECHIN", "IM", "text-1", "ctx-1").doExtensionNotification(new EMMA("text-", "text", "command", 1, 0).setValue(JSON.stringify(result))));
+        }
+      });
+    }
+
+    var mmiCli_1 = new MMIClient(null, mmi_fusion + "SPEECHIN");
+
+    var mmiCli_Out_add = "wss://" + host + ":8005/IM/USER1/";
+    var mmiCli_Out = new MMIClientSocket(mmiCli_Out_add + "SPEECHOUT");
+    mmiCli_Out.onMessage.on(im1MessageHandler);
+    mmiCli_Out.onOpen.on(socketOpenHandler);
+    mmiCli_Out.openSocket();
+
+    function socketOpenHandler(event) {
+      console.log("---------------openSocketHandler---------------");
+
+      if (mmiCli_Out.socket.readyState !== WebSocket.OPEN) {
+        return;
+      }
+    }
+
+    function im1MessageHandler(data) {
+      console.log("--------------im1MessageHandler---------------");
+
+      if (data != null && data != "RENEW" && data != "OK") {
+        console.log(data);
+
+        var content = $(data).find("emma\\:interpretation").first().text().trim();
+
+        if (typeof content == 'string') {
+          try {
+            var xml = $.parseXML(content.replace(/\\"/g, "\"").slice(1, -1));
+            let text = $(xml).find("p").text();
+            console.log(text);
+            speak(text);
+
+            $("#response").html(text);
+            $("#response").addClass("container");
+            $("#response").addClass("responseText");
+
+            setTimeout(function () {
+              $("#response").html("");
+              $("#response").removeClass("container");
+              $("#response").removeClass("responseText");
+            }, 3000);
+          } catch (e) { console.log(e); }
+        }
+      }
+    }
+
+    if ('speechSynthesis' in window) {
+      console.log('Your browser <strong>supports</strong> speech synthesis.');
+    }
+
+    var ttsSpeaker;
+    window.speechSynthesis.onvoiceschanged = function (e) {
+      var voices = speechSynthesis.getVoices();
+      ttsSpeaker = voices[0];
+      for (let i = 0; i < voices.length; i++) {
+        if (voices[i].lang == "pt-PT") {
+          console.log(voices[i]);
+          if (voices[i].name.includes("Duarte")) ttsSpeaker = voices[i];
+        }
+      }
+      console.log(ttsSpeaker);
+    };
+
+    function speak(text) {
+      var msg = new SpeechSynthesisUtterance();
+      msg.text = text;
+      msg.volume = parseFloat(1);
+      msg.rate = parseFloat(1.1);
+      msg.pitch = parseFloat(1);
+      msg.voice = ttsSpeaker;
+      window.speechSynthesis.speak(msg);
+    }
+  </script>
+</body>
+
+</html>

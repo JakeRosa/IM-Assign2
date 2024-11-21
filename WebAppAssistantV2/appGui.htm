@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Google Calendar Voice Assistant</title>
+
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      --indicator-color: black;
+      background: #fff;
+      /*radial-gradient(#fff 75%, var(--indicator-color));*/
+      min-height: 100vh;
+      color: burlywood;
+      font-family: Poppins;
+      margin: 0;
+      padding: 0;
+    }
+
+    .mic {
+      width: 150px;
+    }
+
+    .container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      border-radius: 10px;
+      background-color: #f0f0f0;
+    }
+
+    .responseText {
+      border: solid 2px #8ea7cf;
+      margin: 2%;
+      color: #41683a;
+    }
+
+    .bottomNav {
+
+      position: absolute;
+      bottom: 2%;
+      width: 95%;
+    }
+
+    .recognized {
+      font-size: x-large;
+    }
+  </style>
+</head>
+
+<body>
+  <h1 style="background-color: #4F5D73; margin: 0;">Google Calendar Voice Assistant</h1>
+
+
+
+  <div id="response" class="" style="">d</div>
+
+  <div style="width: 500px;">
+
+
+    <svg class="a" id="a" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+      x="0px" y="0px" viewBox="0 0 320 100" style="enable-background:new 0 0 320 100;" xml:space="preserve">
+      <polygon points="50, 0, 0,100,100,100" class="triangle" />
+      <rect x="110" width="100" height="100" class="square" />
+      <circle cx="270" cy="50" r="50" class="circle" />
+    </svg>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@latest/dist/svg.min.js"></script>
+  <script src="js/mmi.js"></script>
+  <script src="js/globals.js"></script>
+  <script src="js/jquery-3.6.4.min.js"></script>
+  <script src="js/webtoolkit.utf8.js"></script>
+
+
+
+  <script type="module">
+
+
+    var mmiCli_Out_add = "wss://" + host + ":8005/IM/USER1/";
+    var mmiCli_Out = null;
+    mmiCli_Out = new MMIClientSocket(mmiCli_Out_add + "APP");
+    mmiCli_Out.onMessage.on(im1MessageHandler);
+    mmiCli_Out.onOpen.on(socketOpenHandler);
+    mmiCli_Out.openSocket();
+
+
+    function socketOpenHandler(event) {
+      console.log("---------------openSocketHandler---------------")
+
+      if (mmiCli_Out.socket.readyState !== WebSocket.OPEN) {
+        return;
+      }
+    }
+
+
+    let circle = SVG.find('.circle');
+    let square = SVG.find('.square');
+    let triangle = SVG.find('.triangle');
+
+    circle.animate().attr({ fill: '#ccc' });
+    square.animate().attr({ fill: '#ccc' });
+    triangle.animate().attr({ fill: '#ccc' });
+
+
+    function im1MessageHandler(data) {
+
+      console.log("--------------im1MessageHandler---------------");
+
+      if (data != null && data != "RENEW" && data != "OK") {
+        console.log(data);
+        var content = $(data).find("emma\\:interpretation").first().text().trim();
+        if (typeof content == 'string') {
+          try {
+            // Try to parse XML
+            console.log(content);
+
+            //$("#response").html(content);
+            //$("#response").addClass("container");
+            //$("#response").addClass("responseText");
+
+            let c = JSON.parse(content);
+
+            if (c.hasOwnProperty("nlu") && c.nlu.intent == "list_all_events") {
+              sendToVoice("Listando todos os próximos eventos");
+
+              // make a GET request to the Google Calendar API (localhost:8080/events)
+              $.ajax({
+                url: "http://localhost:8080/events", // URL do endpoint
+                method: "GET",
+                success: function (data) {
+                  if (Array.isArray(data) && data.length > 0) {
+                    data.forEach(event => {
+                      const eventDate = new Date(event.start); // Converte a string ISO para objeto Date
+                      const options = { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
+                      const formattedDate = eventDate.toLocaleDateString("pt-PT", options); // Formata a data no estilo português
+                      const message = `Evento: ${event.summary}, marcado para ${formattedDate}.`;
+                      sendToVoice(message); // Envia para o assistente de voz
+                    });
+                  } else {
+                    sendToVoice("Não encontrei nenhum evento nos seus calendários.");
+                  }
+                },
+                error: function (error) {
+                  console.error("Erro ao buscar eventos:", error);
+                  sendToVoice("Ocorreu um erro ao listar os eventos. Tente novamente mais tarde.");
+                }
+              });
+            }
+
+            if (c.hasOwnProperty("nlu") && c.nlu.intent == "delete_event") {
+              let event;
+              let eventDate;
+
+              let body = {
+                summary: c.nlu.event,
+                date: c.nlu.date
+              }
+
+              // make a DELETE request to the Google Calendar API (localhost:8080/events)
+              $.ajax({
+                url: "http://localhost:8080/events", // URL do endpoint
+                method: "DELETE",
+                data: JSON.stringify(body),
+                contentType: "application/json",
+                success: function (data) {
+                  if (data.hasOwnProperty("message") && data.message === "Event deleted") {
+                    event = data.event.summary;
+                    eventDate = new Date(data.event.start);
+                    const options = { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
+                    const formattedDate = eventDate.toLocaleDateString("pt-PT", options);
+                    sendToVoice(`Evento ${event} marcado para ${formattedDate} foi removido com sucesso.`);
+                  } else {
+                    sendToVoice("Não encontrei nenhum evento com essas informações.");
+                  }
+                },
+                error: function (error) {
+                  console.error("Erro ao deletar evento:", error);
+                  sendToVoice("Ocorreu um erro ao deletar o evento. Tente novamente mais tarde.");
+                }
+              });
+            }
+
+            if (c.hasOwnProperty("nlu") && c.nlu.intent == "list_events_of_a_day") {
+              let eventDate = c.nlu.date; // Date in "YYYY-MM-DD" format
+
+              // Perform GET request to fetch events for the specific day
+              $.ajax({
+                url: `http://localhost:8080/events/day?date=${eventDate}`, // Pass the date as a query parameter
+                method: "GET",
+                success: function (data) {
+                  if (Array.isArray(data) && data.length > 0) {
+                    // Format and send the events list to the voice assistant
+                    data.forEach(event => {
+                      const eventStart = new Date(event.start);
+                      const eventEnd = new Date(event.end);
+                      const options = { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
+                      const formattedStart = eventStart.toLocaleDateString("pt-PT", options);
+                      const formattedEnd = eventEnd.toLocaleDateString("pt-PT", options);
+
+                      let message = `Evento: ${event.summary}. Começa às ${formattedStart} e termina às ${formattedEnd}.`;
+
+                      if (event.description) {
+                        message += ` Descrição: ${event.description}.`;
+                      }
+
+                      if (event.location) {
+                        message += ` Localização: ${event.location}.`;
+                      }
+
+                      sendToVoice(message);
+                    });
+                  } else {
+                    sendToVoice("Nenhum evento encontrado para esta data.");
+                  }
+                },
+                error: function (error) {
+                  console.error("Erro ao buscar eventos:", error);
+                  sendToVoice("Ocorreu um erro ao buscar eventos. Tente novamente mais tarde.");
+                }
+              });
+            }
+
+            /*setTimeout(function(){
+              $("#response").html("");
+              $("#response").removeClass("container");
+              $("#response").removeClass("responseText");
+            }, 3000);
+            */
+          }
+          catch (e) { console.log(e); }
+
+        }
+      }
+    }
+
+
+    /////
+
+    var mmiCli_1 = null;
+    mmiCli_1 = new MMIClient(null, "https://" + host + ":8000/IM/USER1/APPSPEECH");
+
+    circle.on('click', function () {
+      console.log("circulo");
+      sendToVoice("circulo");
+    })
+
+    square.on('click', function () {
+      console.log("quadrado");
+      sendToVoice("quadradoç");
+    })
+
+    triangle.on('click', function () {
+      console.log("triangulo");
+      sendToVoice("triangulo");
+    })
+
+    function sendToVoice(texto) {
+      //let speak = "&lt;speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.w3.org/2001/10/synthesis http://www.w3.org/TR/speech-synthesis/synthesis.xsd\" xml:lang=\"pt-PT\"&gt;&lt;p&gt;" + "quadrado" + "&lt;/p&gt;&lt;/speak&gt";
+      let speak = "<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.w3.org/2001/10/synthesis http://www.w3.org/TR/speech-synthesis/synthesis.xsd\" xml:lang=\"pt-PT\"><p>" + texto + "</p></speak>";
+      var result = speak;
+      mmiCli_1.sendToIM(new LifeCycleEvent("APPSPEECH", "IM", "text-1", "ctx-1").
+        doStartRequest(new EMMA("text-", "text", "command", 1, 0).
+          setValue(JSON.stringify(result))));
+    }
+
+
+
+
+    /////////////////////////////////////////
+
+  </script>
+</body>
+
+</html>
