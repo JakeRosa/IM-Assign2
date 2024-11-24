@@ -45,7 +45,7 @@ def normalize_string(s):
     return re.sub(r'\W+', '', s).lower()
 
 @app.get("/events")
-def list_all_events():
+async def list_all_events():
     creds = get_credentials()
     try:
         service = build("calendar", "v3", credentials=creds)
@@ -212,45 +212,74 @@ async def get_portugal_holidays():
     except HttpError as error:
         raise HTTPException(status_code=500, detail=f"An error occurred: {error}")
     
+import datetime
+
+from fastapi import HTTPException
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+
+
 @app.put("/events/move")
 async def move_event(criteria: EventMoveCriteria):
     creds = get_credentials()
     try:
         service = build("calendar", "v3", credentials=creds)
-        now = datetime.datetime.utcnow().isoformat() + "Z"  # 'Z' indicates UTC time
-        events_result = (
-            service.events()
-            .list(
-                calendarId="primary",
-                timeMin=now,
-                maxResults=100,
-                singleEvents=True,
-                orderBy="startTime",
-            )
-            .execute()
-        )
-        events = events_result.get("items", [])
-
-        if not events:
-            return {"message": "No events found."}
         
-        # Find the event to move based on criteria
+        # List all calendars
+        calendars_result = service.calendarList().list().execute()
+        calendars = calendars_result.get("items", [])
+
+        if not calendars:
+            return {"message": "No calendars found."}
+        
+        normalized_criteria_summary = normalize_string(criteria.summary)
+
         event_to_move = None
-        for event in events:
-            event_start_date = event["start"].get("dateTime", event["start"].get("date")).split("T")[0]
-            if event["summary"] == criteria.summary and event_start_date == criteria.date:
-                event_to_move = event
+        target_calendar_id = None
+
+        # Iterate through each calendar
+        for calendar in calendars:
+            calendar_id = calendar["id"]
+            
+            # Fetch events for the calendar
+            now = datetime.datetime.utcnow().isoformat() + "Z"
+            events_result = (
+                service.events()
+                .list(
+                    calendarId=calendar_id,
+                    timeMin=now,
+                    maxResults=100,
+                    singleEvents=True,
+                    orderBy="startTime",
+                )
+                .execute()
+            )
+            events = events_result.get("items", [])
+
+            for event in events:
+                event_start_date = event["start"].get("dateTime", event["start"].get("date")).split("T")[0]
+                normalized_event_summary = normalize_string(event["summary"])
+                if normalized_event_summary == normalized_criteria_summary and event_start_date == criteria.date:
+                    event_to_move = event
+                    target_calendar_id = calendar_id
+                    break
+            
+            if event_to_move:
                 break
 
         if not event_to_move:
             return {"message": "No matching event found."}
 
-        # Update the event fields
+        # Calculate end time (2 hours after new_start)
+        new_start_time = datetime.datetime.fromisoformat(criteria.new_start)
+        new_end_time = new_start_time + datetime.timedelta(hours=2)
+
+        # Update the event fields (start and end date)
         event_to_move['start'] = {'dateTime': criteria.new_start, 'timeZone': 'Europe/Lisbon'}
-        event_to_move['end'] = {'dateTime': criteria.new_end, 'timeZone': 'Europe/Lisbon'}
+        event_to_move['end'] = {'dateTime': new_end_time.isoformat(), 'timeZone': 'Europe/Lisbon'}
 
         # Update the event
-        updated_event = service.events().update(calendarId='primary', eventId=event_to_move["id"], body=event_to_move).execute()
+        updated_event = service.events().update(calendarId=target_calendar_id, eventId=event_to_move["id"], body=event_to_move).execute()
         return {"message": "Event moved", "event": updated_event}
     except HttpError as error:
         raise HTTPException(status_code=500, detail=f"An error occurred: {error}")

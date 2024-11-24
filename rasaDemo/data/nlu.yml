@@ -56,25 +56,20 @@ nlu:
   # eliminar eventos
 - intent: delete_event
   examples: |
-    - Quero eliminar o evento [Jantar com amigos](event) de [11](dia) de [janeiro](mês) de [2025](ano)
-    - Apaga o evento [Consulta médica](event) de [15](dia) de [fevereiro](mês) de [2024](ano)
-    - Remove o evento [Reunião de equipa](event) no dia [20](dia) de [março](mês) de [2024](ano)
     - Quero que elimines o evento [Treino de futebol](event) de [10](dia) de [abril](mês) de [2024](ano)
-    - Elimina o evento [Aniversário do João](event) do dia [25](dia) de [maio](mês) de [2024](ano)
     - Preciso apagar o evento [Workshop de fotografia](event) do dia [5](dia) de [junho](mês) de [2024](ano)
     - Elimina o evento [Live de lançamento](event) no dia [12](dia) de [julho](mês) de [2024](ano)
-    - Apaga o evento [Viagem para Lisboa](event) de [1](dia) de [agosto](mês) de [2024](ano)
     - Remove o evento [Cinema com amigos](event) do dia [18](dia) de [setembro](mês) de [2024](ano)
     - Apaga o evento [Exame final de matemática](event) de [30](dia) de [outubro](mês) de [2024](ano)
     - Quero eliminar o evento [Jantar com família](event) no dia [8](dia) de [novembro](mês) de [2024](ano)
-    - Remove o evento [Aula de yoga](event) marcado para [15](dia) de [dezembro](mês) de [2024](ano)
+    - Exclui o evento [Treino de futebol](event) do dia [5](dia) de [abril](mês) de [2024](ano)
 
   # eventos de uma data
 - intent: list_events_of_a_day
   examples: |
     - Lista todos os eventos do [25](dia) de [dezembro](mês) de [2024](ano)
     - Quais são os eventos do dia [1](dia) de [janeiro](mês) de [2024](ano)?
-    - Mostra os eventos do [15](dia) de [fevereiro](mês) de [2025](ano)
+    - Mostra os eventos de [15](dia) de [fevereiro](mês) de [2025](ano)
     - Quero ver os eventos do dia [10](dia) de [março](mês) de [2024](ano)
     - Diz-me os eventos do [20](dia) de [abril](mês) de [2024](ano)
     - Que eventos estão marcados para [30](dia) de [maio](mês) de [2024](ano)?
@@ -83,7 +78,6 @@ nlu:
     - Quais são os eventos programados para [1](dia) de [agosto](mês) de [2024](ano)?
     - Tens eventos marcados para [18](dia) de [setembro](mês) de [2024](ano)?
     - Quero saber o que está no calendário no dia [30](dia) de [outubro](mês) de [2024](ano)
-    - Mostra os eventos do dia [8](dia) de [novembro](mês) de [2024](ano)
     - Que eventos tenho no dia [15](dia) de [dezembro](mês) de [2024](ano)?
 
 - intent: list_holidays
@@ -105,6 +99,13 @@ nlu:
     - Há feriados nos próximos tempos? Mostra-me
 
   # alterar data de evento
+- intent: update_event_date
+  examples: |
+    - Quero mudar a data de um evento
+    - Altera a data de um evento
+    - Quero ajustar a data de um evento
+    - Quero atualizar o dia de um evento
+    - Quero alterar a data de um evento
 
 - intent: list_birthdays
   examples: |
@@ -145,26 +146,38 @@ nlu:
     - Elimina o [Calendário de reuniões](calendar)
     - Remove o [Calendário de férias](calendar)
     - Quero apagar o calendário [Calendário escolar](calendar)
-    - Faz a eliminação do [Calendário de tarefas](calendar)
     - Quero que apagues o calendário [Calendário da equipa](calendar)
     - Elimina o calendário chamado [Calendário de projetos](calendar)
     - Apaga o [Calendário de aniversários](calendar)
     - Remove o calendário [Calendário da universidade](calendar)
     - Preciso que apagues o calendário [Calendário de consultas médicas](calendar)
 
-# adiciona um evento a um calendário
+# adiciona um evento existente a um calendário
 - intent: add_event_to_calendar
   examples: |
-    - Adiciona o evento [Reunião de equipa](event) no dia [15](dia) de [novembro](mês) de [2024](ano) ao [Calendário do trabalho](calendar)
-    - Quero adicionar o evento [Aniversário do João](event) no dia [12](dia) de [dezembro](mês) de [2024](ano) ao [Calendário de aniversários](calendar)
-    - Coloca o evento [Consulta médica](event) no dia [22](dia) de [novembro](mês) de [2024](ano) no [Calendário de consultas médicas](calendar)
-    - Adiciona o evento [Jantar com amigos](event) no dia [30](dia) de [novembro](mês) de [2024](ano) ao [Calendário pessoal](calendar)
-    - Marca o evento [Workshop de fotografia](event) no dia [1](dia) de [dezembro](mês) de [2024](ano) no [Calendário de projetos](calendar)
-    - Quero pôr o evento [Treino de futebol](event) no dia [18](dia) de [novembro](mês) de [2024](ano) no [Calendário de desporto](calendar)
-    - Insere o evento [Live de lançamento](event) no dia [5](dia) de [dezembro](mês) de [2024](ano) no [Calendário de marketing](calendar)
-    - Coloca o evento [Viagem para Lisboa](event) no dia [10](dia) de [dezembro](mês) de [2024](ano) no [Calendário de férias](calendar)
-    - Adiciona o evento [Exame final de matemática](event) no dia [25](dia) de [novembro](mês) de [2024](ano) ao [Calendário escolar](calendar)
-    - Insere o evento [Cinema com amigos](event) no dia [2](dia) de [dezembro](mês) de [2024](ano) no [Calendário pessoal](calendar)
+    - Adiciona um evento existente ao [Calendário do trabalho](calendar)
+    - Quero adicionar um evento existente ao [Calendário de aniversários](calendar)
+    - Coloca um evento existente no [Calendário de consultas médicas](calendar)
+    - Quero pôr um evento que já existe no [Calendário de desporto](calendar)
+    - Insere um evento existente no [Calendário de marketing](calendar)
+    - Quero mover um evento para o [Calendário de desporto](calendar)
+    - Move um evento para o [Calendário de consultas médicas](calendar)
+    - Quero mudar um evento que já foi criado para o [Calendário de reuniões](calendar)
+
+# adiciona um evento existente a um calendário
+- intent: add_event_to_calendar
+  examples: |
+    - Adiciona um evento já existente ao [Calendário do trabalho](calendar)
+    - Quero colocar um evento já criado no [Calendário de aniversários](calendar)
+    - Move um evento existente para o [Calendário de desporto](calendar)
+    - Quero mover um evento para o [Calendário de marketing](calendar)
+    - Muda um evento que já existe para o [Calendário de tarefas](calendar)
+    - Quero transferir um evento para o [Calendário de projetos](calendar)
+    - Adiciona um evento existente ao [Calendário da família](calendar)
+    - Move um evento que já foi criado para o [Calendário de aniversários](calendar)
+    - Atualiza o [Calendário escolar](calendar) com um evento existente
+    - Adiciona um evento que já existe ao [Calendário de viagens](calendar)
+    - Quero mudar um evento existente para o [Calendário de esportes](calendar)
 
 # listar eventos de um calendário
 - intent: list_events_in_calendar
@@ -186,6 +199,99 @@ nlu:
     - Mostra todos os eventos do [Calendário da universidade](calendar)
     - Lista os eventos que estão no [Calendário das apresentações escolares](calendar)
 
+# # # deteta um evento
+# - intent: provide_event
+#   examples: |
+#     - Quero mover o evento [Reunião de equipa](event) do dia [15](dia) de [novembro](mês) de [2024](ano)
+#     - O evento é [Jantar com amigos](event) do dia [30](dia) de [novembro](mês) de [2024](ano) 
+#     - O evento [Workshop de fotografia](event) do dia [1](dia) de [dezembro](mês) de [2024](ano) 
+#     - [Treino de futebol](event) do dia [18](dia) de [novembro](mês) de [2024](ano) 
+#     - [Live de lançamento](event) do dia [5](dia) de [dezembro](mês) de [2024](ano) 
+#     - [Viagem para Lisboa](event) do dia [10](dia) de [dezembro](mês) de [2024](ano) 
+#     - [Exame final de matemática](event) do dia [25](dia) de [novembro](mês) de [2024](ano) 
+#     - [Cinema com amigos](event) do dia [2](dia) de [dezembro](mês) de [2024](ano)
+
+- intent: provide_event_name
+  examples: |
+    - O evento chama-se [Reunião de equipa](event)
+    - O evento [Live de lançamento](event)
+    - [Jantar com amigos](event)
+
+- intent: provide_date
+  examples: |
+    - A data é [18](dia) de [fevereiro](mês) de [2025](ano)
+    - A data é dia [18](dia) de [fevereiro](mês) de [2025](ano)
+    - Dia [25](dia) de [dezembro](mês) de [2024](ano)
+    - [29](dia) de [novembro](mês) de [2024](ano)
+    - No dia [2](dia) de [janeiro](mês) de [2024](ano)
+
+- intent: provide_time
+  examples: |
+    - Às [14:00](horas)
+    - [10:30](horas)
+    - Será às [16:45](horas)
+    - Começa às [09:00](horas)
+    - [12:15](horas)
+    - O evento será às [18:00](horas)
+    - Às [20:30](horas)
+    - Vai ser às [11:45](horas)
+    - Será marcado para as [08:15](horas)
+    - [23:00](horas)
+
+- lookup: event
+  examples: |
+    - Reunião de equipa
+    - Consulta médica
+    - Aniversário da Maria
+    - Jantar com amigos
+    - Viagem para Lisboa
+    - Entrega do relatório final
+    - Treino de pernas
+    - Apresentação
+    - Workshop de programação
+    - Reunião com o cliente
+    - Festa de aniversário do João
+    - Treino de futebol
+    - Cinema com amigos
+    - Reunião de brainstorming
+    - Exame final de Cálculo
+    - Almoço com os colegas
+    - Dentista
+    - Apresentação de resultados
+    - Reunião de revisão trimestral
+    - Conferência anual de tecnologia
+    - Aniversário do Pedro
+    - Caminhada no parque
+    - Aula de piano
+    - Sessão de fisioterapia
+    - Exame de condução
+    - Consulta com o psicólogo
+    - Entrevista com empresas
+    - Reunião de condomínio
+    - Planeamento da viagem de férias
+    - Entrega do projeto
+    - Piquenique com a família
+    - Sessão de treino
+
+- lookup: calendar
+  examples: |
+    - Calendário pessoal
+    - Calendário do trabalho
+    - Calendário de aniversários
+    - Calendário da equipa
+    - Calendário de projetos
+    - Calendário da família
+    - Calendário de férias
+    - Calendário escolar
+    - Calendário de eventos públicos
+    - Calendário de reuniões
+    - Calendário de desporto
+    - Calendário de tarefas
+    - Calendário de exames
+    - Calendário de consultas médicas
+    - Calendário de ginásio
+    - Calendário da universidade
+    - Calendário das apresentações escolares
 
 # Regex para dias
 - regex: dia
@@ -195,7 +301,7 @@ nlu:
 # Regex para meses
 - regex: mês
   examples: |
-    - \b(Janeiro|Fevereiro|Março|Abril|Maio|Junho|Julho|Agosto|Setembro|Outubro|Novembro|Dezembro)\b
+    - \b(janeiro|fevereiro|março|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\b
 
 # Regex para anos
 - regex: ano

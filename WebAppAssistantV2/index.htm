@@ -216,7 +216,7 @@
         "dezembro": "12"
       };
 
-      // Adicionar zero à esquerda para dias e meses com 1 dígito
+      // Adds a leading zero to single-digit days
       const formattedDay = day.length === 1 ? `0${day}` : day;
       const formattedMonth = monthMap[month.toLowerCase()] || "00"; // "00" como fallback para erros
 
@@ -231,8 +231,66 @@
 
         message = {};
 
+        if (data.intent.name == 'nlu_fallback') {
+          var message = { 'intent': 'nlu_fallback', 'confidence': data.intent.confidence };
+        }
+
+        if (data.intent.name == 'affirm') {
+          var message = { 'intent': 'affirm', 'confidence': data.intent.confidence };
+        }
+
+        if (data.intent.name == 'deny') {
+          var message = { 'intent': 'deny', 'confidence': data.intent.confidence };
+        }
+
+        if (data.intent.name == 'provide_event_name') {
+          let event = "";
+          let name_confidence = 0;
+          for (let i = 0; i < data.entities.length; i++) {
+            if (data.entities[i].entity == 'event') event = data.entities[i].value;
+            if (data.entities[i].entity == 'event') name_confidence = data.entities[i].confidence_entity;
+          }
+
+          var message = { 'intent': 'provide_event_name', 'confidence': data.intent.confidence, 'name_confidence': name_confidence, 'event': event };
+        }
+
+        if (data.intent.name == 'provide_date') {
+          let day = "", month = "", year = "";
+          for (let i = 0; i < data.entities.length; i++) {
+            if (data.entities[i].entity == 'dia') day = data.entities[i].value;
+            if (data.entities[i].entity == 'mês') month = data.entities[i].value;
+            if (data.entities[i].entity == 'ano') year = data.entities[i].value;
+          }
+
+          const formattedDate = formatDate(day, month, year);
+          var message = { 'intent': 'provide_date', 'confidence': data.intent.confidence, 'date': formattedDate };
+        }
+
+        // time is in HH:MM format with entity "horas" JUST "horas"
+        if (data.intent.name == 'provide_time') {
+          let time = "";
+          for (let i = 0; i < data.entities.length; i++) {
+            if (data.entities[i].entity == 'horas') time = data.entities[i].value;
+          }
+
+          var message = { 'intent': 'provide_time', 'confidence': data.intent.confidence, 'time': time };
+        }
+
+        // if (data.intent.name == 'provide_event') {
+        //   let event = "", day = "", month = "", year = "";
+        //   for (let i = 0; i < data.entities.length; i++) {
+        //     if (data.entities[i].entity == 'event') event = data.entities[i].value;
+        //     if (data.entities[i].entity == 'dia') day = data.entities[i].value;
+        //     if (data.entities[i].entity == 'mês') month = data.entities[i].value;
+        //     if (data.entities[i].entity == 'ano') year = data.entities[i].value;
+        //   }
+
+        //   const formattedDate = formatDate(day, month, year);
+        //   var message = { 'intent': 'provide_event', 'confidence': data.intent.confidence, 'event': event, 'date': formattedDate };
+        // }
+
         if (data.intent.name == 'list_all_events') {
-          var message = { 'intent': 'list_all_events' };
+          var message = { 'intent': 'list_all_events', 'confidence': data.intent.confidence };
         }
 
         // date must be in YYYY-MM-DD format
@@ -246,7 +304,16 @@
           }
 
           const formattedDate = formatDate(day, month, year);
-          var message = { 'intent': 'delete_event', 'event': event, 'date': formattedDate };
+          var message = { 'intent': 'delete_event', 'confidence': data.intent.confidence, 'event': event, 'date': formattedDate };
+        }
+
+        if (data.intent.name == 'add_event_to_calendar') {
+          let calendar = "";
+          for (let i = 0; i < data.entities.length; i++) {
+            if (data.entities[i].entity == 'calendar') calendar = data.entities[i].value;
+          }
+
+          var message = { 'intent': 'add_event_to_calendar', 'confidence': data.intent.confidence, 'calendar': calendar };
         }
 
         // date must be in YYYY-MM-DD format
@@ -259,7 +326,37 @@
           }
 
           const formattedDate = formatDate(day, month, year);
-          var message = { 'intent': 'list_events_of_a_day', 'date': formattedDate };
+          var message = { 'intent': 'list_events_of_a_day', 'confidence': data.intent.confidence, 'date': formattedDate };
+        }
+
+        if (data.intent.name == 'list_holidays') {
+          var message = { 'intent': 'list_holidays', 'confidence': data.intent.confidence };
+        }
+
+        if (data.intent.name == 'update_event_date') {
+          var message = { 'intent': 'update_event_date', 'confidence': data.intent.confidence };
+        }
+
+        if (data.intent.name == 'list_birthdays') {
+          var message = { 'intent': 'list_birthdays', 'confidence': data.intent.confidence };
+        }
+
+        if (data.intent.name == 'create_calendar') {
+          let calendarName = data.entities[0].value;
+
+          var message = { 'intent': 'create_calendar', 'confidence': data.intent.confidence, 'calendar': calendarName };
+        }
+
+        if (data.intent.name == 'delete_calendar') {
+          let calendarName = data.entities[0].value;
+
+          var message = { 'intent': 'delete_calendar', 'confidence': data.intent.confidence, 'calendar': calendarName };
+        }
+
+        if (data.intent.name == 'list_events_in_calendar') {
+          let calendarName = data.entities[0].value;
+
+          var message = { 'intent': 'list_events_in_calendar', 'confidence': data.intent.confidence, 'calendar': calendarName };
         }
 
         if (message != {}) {
@@ -326,7 +423,7 @@
       for (let i = 0; i < voices.length; i++) {
         if (voices[i].lang == "pt-PT") {
           console.log(voices[i]);
-          if (voices[i].name.includes("Duarte")) ttsSpeaker = voices[i];
+          if (voices[i].name.includes("Helia")) ttsSpeaker = voices[i];
         }
       }
       console.log(ttsSpeaker);

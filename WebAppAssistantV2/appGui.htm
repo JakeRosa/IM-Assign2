@@ -108,6 +108,291 @@
     square.animate().attr({ fill: '#ccc' });
     triangle.animate().attr({ fill: '#ccc' });
 
+    let confirmationState = {
+      isConfirming: false,
+      pendingIntent: null,
+      data: null // data to be confirmed
+    };
+
+    let addEventToCalendarState = {
+      isAwaitingDetails: false,
+      calendarName: null,
+      eventName: null,
+    }
+
+    let updateEventDateState = {
+      isAwaitingDetails: false,
+      eventName: null,
+      date: null,
+      newStartDate: null,
+    }
+
+    function list_all_events() {
+      // make a GET request to the Google Calendar API (localhost:8080/events)
+      $.ajax({
+        url: "http://localhost:8080/events", // URL do endpoint
+        method: "GET",
+        success: function (data) {
+          if (Array.isArray(data) && data.length > 0) {
+            sendToVoice("Ok, aqui tens a lista de todos os eventos no teu calendário:");
+            data.forEach(event => {
+              const eventDate = new Date(event.start); // Converte a string ISO para objeto Date
+              const options = { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
+              const formattedDate = eventDate.toLocaleDateString("pt-PT", options); // Formata a data no estilo português
+              const message = `Tens o evento ${event.summary} marcado para ${formattedDate}.`;
+              sendToVoice(message); // Envia para o assistente de voz
+            });
+          } else {
+            sendToVoice("Não encontrei nenhum evento no teu calendário.");
+          }
+        },
+        error: function (error) {
+          console.error("Erro ao buscar eventos:", error);
+          sendToVoice("Ocorreu um erro ao listar os eventos. Tenta novamente mais tarde.");
+        }
+      });
+    }
+
+    function delete_event(body) {
+      let event;
+      let eventDate;
+
+      // make a DELETE request to the Google Calendar API (localhost:8080/events)
+      $.ajax({
+        url: "http://localhost:8080/events", // URL do endpoint
+        method: "DELETE",
+        data: JSON.stringify(body),
+        contentType: "application/json",
+        success: function (data) {
+          if (data.hasOwnProperty("message") && data.message === "Event deleted") {
+            event = data.event.summary;
+            eventDate = new Date(data.event.start);
+            const options = { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
+            const formattedDate = eventDate.toLocaleDateString("pt-PT", options);
+            sendToVoice(`Evento ${event} marcado para ${formattedDate} foi removido com sucesso.`);
+          } else {
+            sendToVoice("Não encontrei nenhum evento com essas informações.");
+          }
+        },
+        error: function (error) {
+          console.error("Erro ao deletar evento:", error);
+          sendToVoice("Ocorreu um erro ao remover o evento. Tenta novamente mais tarde.");
+        }
+      });
+    }
+
+    function list_events_of_a_day(eventDate) {
+      // make a GET request to the Google Calendar API (localhost:8080/events/date)
+      $.ajax({
+        url: `http://localhost:8080/events/date?date=${eventDate}`, // Pass the date as a query parameter
+        method: "GET",
+        success: function (data) {
+          if (Array.isArray(data) && data.length > 0) {
+            sendToVoice(`Ok, aqui tens a lista de eventos para o dia ${eventDate}:`);
+            data.forEach(event => {
+              const eventDate = new Date(event.start); // Converte a string ISO para objeto Date
+              const options = { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
+              const formattedDate = eventDate.toLocaleDateString("pt-PT", options); // Formata a data no estilo português
+              const message = `Tens o evento ${event.summary} marcado para ${formattedDate}.`;
+              sendToVoice(message); // Envia para o assistente de voz
+            });
+          } else {
+            sendToVoice("Não encontrei nenhum evento marcado para esse dia.");
+          }
+        },
+        error: function (error) {
+          console.error("Erro ao buscar eventos do dia:", error);
+          sendToVoice("Ocorreu um erro ao listar os eventos do dia. Tenta novamente mais tarde.");
+        }
+      });
+    }
+
+    function list_holidays() {
+      // make a GET request to the Google Calendar API (localhost:8080/holidays)
+      $.ajax({
+        url: "http://localhost:8080/holidays", // URL do endpoint
+        method: "GET",
+        success: function (data) {
+          if (Array.isArray(data) && data.length > 0) {
+            sendToVoice("Aqui estão os feriados e outras comemorações que encontrei");
+            data.forEach(holiday => {
+              const holidayDate = new Date(holiday.start); // Converte a string ISO para objeto Date
+              const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
+              const formattedDate = holidayDate.toLocaleDateString("pt-PT", options); // Formata a data no estilo português
+              const message = `${holiday.summary}, será na ${formattedDate}.`;
+              sendToVoice(message); // Envia para o assistente de voz
+            });
+          } else {
+            sendToVoice("Não encontrei nenhum feriado ou comemoração no calendário.");
+          }
+        },
+        error: function (error) {
+          console.error("Erro ao buscar feriados:", error);
+          sendToVoice("Ocorreu um erro ao listar os feriados e comemorações. Tenta novamente mais tarde.");
+        }
+      });
+    }
+
+    function update_event_date(body) {
+      const eventName = body.summary;
+      const eventDate = body.date;
+      const newStartDate = body.new_start;
+      const newStartHour = body.new_start_hour;
+
+      console.log(body);
+
+      // Fazer uma solicitação PUT para atualizar a data do evento
+      $.ajax({
+        url: "http://localhost:8080/events/move", // URL do endpoint
+        method: "PUT",
+        data: JSON.stringify(body),
+        contentType: "application/json",
+        success: function (data) {
+          if (data.hasOwnProperty("message") && data.message === "Event moved") {
+            let formattedNewStartDate = new Date(newStartDate).toLocaleDateString("pt-PT", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
+            sendToVoice(`A data do evento "${eventName}" foi atualizada com sucesso para ${formattedNewStartDate}.`);
+          } else if (data.hasOwnProperty("message") && data.message === "No matching event found.") {
+            sendToVoice(`Não encontrei um evento chamado "${eventName}" na data ${eventDate}. Verifica as informações e tenta novamente.`);
+          } else {
+            sendToVoice("Não foi possível atualizar a data do evento. Tenta novamente mais tarde.");
+          }
+        },
+        error: function (error) {
+          console.error("Erro ao atualizar a data do evento:", error);
+          sendToVoice("Ocorreu um erro ao atualizar a data do evento. Tenta novamente mais tarde.");
+        }
+      });
+    }
+
+    function list_birthdays() {
+      // make a GET request to the Google Calendar API (localhost:8080/birthdays)
+      $.ajax({
+        url: "http://localhost:8080/birthdays", // URL do endpoint
+        method: "GET",
+        success: function (data) {
+          if (Array.isArray(data) && data.length > 0) {
+            data.forEach(birthday => {
+              const birthdayDate = new Date(birthday.start); // Converte a string ISO para objeto Date
+              const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
+              const formattedDate = birthdayDate.toLocaleDateString("pt-PT", options); // Formata a data no estilo português
+              const message = `Tens o aniversário ${birthday.summary}, na ${formattedDate}.`;
+              sendToVoice(message); // Envia para o assistente de voz
+            });
+          } else {
+            sendToVoice("Não encontrei nenhum aniversário.");
+          }
+        },
+        error: function (error) {
+          console.error("Erro ao buscar aniversários:", error);
+          sendToVoice("Ocorreu um erro ao listar os aniversários. Tenta novamente mais tarde.");
+        }
+      });
+    }
+
+    function create_calendar(calendarName) {
+      let body = {
+        summary: calendarName
+      }
+
+      // make a POST request to the Google Calendar API (localhost:8080/calendars)
+      $.ajax({
+        url: "http://localhost:8080/calendars", // URL do endpoint
+        method: "POST",
+        data: JSON.stringify(body),
+        contentType: "application/json",
+        success: function (data) {
+          if (data.hasOwnProperty("message") && data.message === "Calendar created") {
+            sendToVoice(`Calendário ${calendarName} criado com sucesso.`);
+          } else {
+            sendToVoice("Não foi possível criar o calendário. Tenta novamente mais tarde.");
+          }
+        },
+        error: function (error) {
+          console.error("Erro ao criar calendário:", error);
+          sendToVoice("Ocorreu um erro ao criar o calendário. Tenta novamente mais tarde.");
+        }
+      });
+    }
+
+    function delete_calendar(calendarName) {
+      let body = {
+        summary: calendarName
+      }
+
+      // make a DELETE request to the Google Calendar API (localhost:8080/calendars)
+      $.ajax({
+        url: "http://localhost:8080/calendars", // URL do endpoint
+        method: "DELETE",
+        data: JSON.stringify(body),
+        contentType: "application/json",
+        success: function (data) {
+          if (data.hasOwnProperty("message") && data.message === "Calendar deleted") {
+            sendToVoice(`Calendário ${calendarName} removido com sucesso.`);
+          } else {
+            sendToVoice("Não foi possível remover o calendário. Tenta novamente mais tarde.");
+          }
+        },
+        error: function (error) {
+          console.error("Erro ao deletar calendário:", error);
+          sendToVoice("Ocorreu um erro ao remover o calendário. Tenta novamente mais tarde.");
+        }
+      });
+    }
+
+    function move_event_to_calendar(body) {
+      const eventName = body.summary;
+      const eventDate = body.date;
+      const newCalendar = body.new_calendar_summary;
+
+      // Fazer uma solicitação PUT para mover o evento para outro calendário
+      $.ajax({
+        url: "http://localhost:8080/events/move-to-calendar", // URL do endpoint
+        method: "PUT",
+        data: JSON.stringify(body),
+        contentType: "application/json",
+        success: function (data) {
+          if (data.hasOwnProperty("message") && data.message === "Event moved to new calendar") {
+            sendToVoice(`Evento "${eventName}" foi movido para o calendário "${newCalendar}" com sucesso.`);
+          } else if (data.hasOwnProperty("message") && data.message === "No matching event found.") {
+            sendToVoice(`Não encontrei um evento chamado "${eventName}" na data ${eventDate}. Verifica as informações e tenta novamente.`);
+          } else if (data.hasOwnProperty("message") && data.message === "No matching calendar found.") {
+            sendToVoice(`Não encontrei um calendário chamado "${newCalendar}". Verifica o nome do calendário e tenta novamente.`);
+          } else {
+            sendToVoice("Não foi possível mover o evento. Tenta novamente mais tarde.");
+          }
+        },
+        error: function (error) {
+          console.error("Erro ao mover evento:", error);
+          sendToVoice("Ocorreu um erro ao mover o evento para outro calendário. Tenta novamente mais tarde.");
+        }
+      });
+    }
+
+    function list_events_in_calendar(calendarName) {
+      // make a GET request to the Google Calendar API (localhost:8080/events/calendar)
+      $.ajax({
+        url: `http://localhost:8080/events/calendar?calendar_summary=${calendarName}`, // Pass the calendar name as a query parameter
+        method: "GET",
+        success: function (data) {
+          if (Array.isArray(data) && data.length > 0) {
+            sendToVoice(`Aqui estão os eventos no calendário ${calendarName}:`);
+            data.forEach(event => {
+              const eventDate = new Date(event.start); // Converte a string ISO para objeto Date
+              const options = { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
+              const formattedDate = eventDate.toLocaleDateString("pt-PT", options); // Formata a data no estilo português
+              const message = `Tens o evento ${event.summary} marcado para ${formattedDate}.`;
+              sendToVoice(message); // Envia para o assistente de voz
+            });
+          } else {
+            sendToVoice(`Não encontrei nenhum evento no calendário ${calendarName}.`);
+          }
+        },
+        error: function (error) {
+          console.error("Erro ao buscar eventos do calendário:", error);
+          sendToVoice(`Ocorreu um erro ao listar os eventos do calendário ${calendarName}. Tente novamente mais tarde.`);
+        }
+      });
+    }
 
     function im1MessageHandler(data) {
 
@@ -127,104 +412,267 @@
 
             let c = JSON.parse(content);
 
-            if (c.hasOwnProperty("nlu") && c.nlu.intent == "list_all_events") {
-              sendToVoice("Listando todos os próximos eventos");
-
-              // make a GET request to the Google Calendar API (localhost:8080/events)
-              $.ajax({
-                url: "http://localhost:8080/events", // URL do endpoint
-                method: "GET",
-                success: function (data) {
-                  if (Array.isArray(data) && data.length > 0) {
-                    data.forEach(event => {
-                      const eventDate = new Date(event.start); // Converte a string ISO para objeto Date
-                      const options = { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
-                      const formattedDate = eventDate.toLocaleDateString("pt-PT", options); // Formata a data no estilo português
-                      const message = `Evento: ${event.summary}, marcado para ${formattedDate}.`;
-                      sendToVoice(message); // Envia para o assistente de voz
-                    });
-                  } else {
-                    sendToVoice("Não encontrei nenhum evento nos seus calendários.");
-                  }
-                },
-                error: function (error) {
-                  console.error("Erro ao buscar eventos:", error);
-                  sendToVoice("Ocorreu um erro ao listar os eventos. Tente novamente mais tarde.");
-                }
-              });
+            if (c.hasOwnProperty("nlu") && c.nlu.confidence < 0.45) {
+              sendToVoice("Não percebi o que quiseste dizer. Podes repetir?");
             }
 
-            if (c.hasOwnProperty("nlu") && c.nlu.intent == "delete_event") {
-              let event;
-              let eventDate;
+            if (c.hasOwnProperty("nlu") && c.nlu.intent == "affirm" && confirmationState.isConfirming) {
+              if (confirmationState.pendingIntent === "list_all_events") {
+                list_all_events();
+              } else if (confirmationState.pendingIntent === "delete_event") {
+                let body = {
+                  summary: confirmationState.data.event,
+                  date: confirmationState.data.date
+                };
+                delete_event(body);
+              } else if (confirmationState.pendingIntent === "list_events_of_a_day") {
+                list_events_of_a_day(confirmationState.data.date);
+              } else if (confirmationState.pendingIntent === "list_holidays") {
+                list_holidays();
+              } else if (confirmationState.pendingIntent === "list_birthdays") {
+                list_birthdays();
+              } else if (confirmationState.pendingIntent === "create_calendar") {
+                create_calendar(confirmationState.data.calendar);
+              } else if (confirmationState.pendingIntent === "delete_calendar") {
+                delete_calendar(confirmationState.data.calendar);
+              } else if (confirmationState.pendingIntent === "list_events_in_calendar") {
+                list_events_in_calendar(confirmationState.data.calendar);
+              } else if (confirmationState.pendingIntent === "add_event_to_calendar") {
+                addEventToCalendarState.isAwaitingDetails = true;
+                addEventToCalendarState.calendarName = confirmationState.data.calendar;
+                sendToVoice(`Qual é o nome do evento que queres mover?`);
+              } else if (confirmationState.pendingIntent === "provide_event_name") {
+                if (addEventToCalendarState.isAwaitingDetails) {
+                  addEventToCalendarState.eventName = confirmationState.data.event;
+                  sendToVoice(`Qual é a data do evento ${addEventToCalendarState.eventName}?`);
+                } else if (updateEventDateState.isAwaitingDetails) {
+                  updateEventDateState.eventName = confirmationState.data.event;
+                  sendToVoice(`Qual é a data atual do evento ${updateEventDateState.eventName}?`);
+                }
+              } else if (confirmationState.pendingIntent === "provide_date") {
+                if (addEventToCalendarState.isAwaitingDetails) {
+                  let body = {
+                    summary: addEventToCalendarState.eventName,
+                    date: confirmationState.data.date,
+                    new_calendar_summary: addEventToCalendarState.calendarName,
+                  };
+                  move_event_to_calendar(body);
 
+                  addEventToCalendarState.isAwaitingDetails = false;
+                  addEventToCalendarState.calendarName = null;
+                  addEventToCalendarState.eventName = null;
+                } else if (updateEventDateState.isAwaitingDetails && updateEventDateState.date == null) {
+                  updateEventDateState.date = confirmationState.data.date;
+                  sendToVoice(`Qual será a nova data do evento ${updateEventDateState.eventName}?`);
+                } else if (updateEventDateState.isAwaitingDetails && updateEventDateState.date != null && updateEventDateState.newStartDate == null) {
+                  updateEventDateState.newStartDate = confirmationState.data.date;
+                  sendToVoice(`Qual será a nova hora do evento ${updateEventDateState.eventName}?`);
+                }
+              } else if (confirmationState.pendingIntent === "update_event_date") {
+                updateEventDateState.isAwaitingDetails = true;
+                sendToVoice(`Qual é o nome do evento que queres atualizar a data?`);
+              } else if (confirmationState.pendingIntent === "provide_time") {
+                if (updateEventDateState.isAwaitingDetails && updateEventDateState.date != null && updateEventDateState.newStartDate != null) {
+                  let isoTimestamp = `${updateEventDateState.newStartDate}T${confirmationState.data.time}:00+01:00`;
+                  let body = {
+                    summary: updateEventDateState.eventName,
+                    date: updateEventDateState.date,
+                    new_start: isoTimestamp
+                  };
+
+                  update_event_date(body);
+
+                  updateEventDateState.isAwaitingDetails = false;
+                  updateEventDateState.eventName = null;
+                  updateEventDateState.date = null;
+                  updateEventDateState.newStartDate = null;
+                }
+              }
+              confirmationState.isConfirming = false;
+              confirmationState.pendingIntent = null;
+              confirmationState.data = null;
+            }
+
+            if (c.hasOwnProperty("nlu") && c.nlu.intent == "deny" && confirmationState.isConfirming) {
+              sendToVoice("Operação cancelada.");
+              confirmationState.isConfirming = false;
+              confirmationState.pendingIntent = null;
+              confirmationState.data = null;
+            }
+
+            if (c.hasOwnProperty("nlu") && c.nlu.intent == "provide_event_name" && c.nlu.name_confidence >= 0.8) {
+              if (addEventToCalendarState.isAwaitingDetails) {
+                addEventToCalendarState.eventName = c.nlu.event;
+                sendToVoice(`Qual é a data do evento ${addEventToCalendarState.eventName}?`);
+              } else if (updateEventDateState.isAwaitingDetails) {
+                updateEventDateState.eventName = c.nlu.event;
+                sendToVoice(`Qual é a data atual do evento ${updateEventDateState.eventName}?`);
+              }
+            } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "provide_event_name" && (c.nlu.name_confidence >= 0.45 && c.nlu.name_confidence < 0.8)) {
+              if (addEventToCalendarState.isAwaitingDetails || updateEventDateState.isAwaitingDetails) {
+                sendToVoice(`Percebi que o evento chama-se ${c.nlu.event}. Está correto?`);
+                confirmationState.isConfirming = true;
+                confirmationState.pendingIntent = "provide_event_name";
+                confirmationState.data = c.nlu;
+              }
+            }
+
+            if (c.hasOwnProperty("nlu") && c.nlu.intent == "provide_date" && c.nlu.confidence >= 0.8) {
+              if (addEventToCalendarState.isAwaitingDetails) {
+                let body = {
+                  summary: addEventToCalendarState.eventName,
+                  date: c.nlu.date,
+                  new_calendar_summary: addEventToCalendarState.calendarName,
+                };
+                move_event_to_calendar(body);
+
+                addEventToCalendarState.isAwaitingDetails = false;
+                addEventToCalendarState.calendarName = null;
+                addEventToCalendarState.eventName = null;
+              } else if (updateEventDateState.isAwaitingDetails && updateEventDateState.date == null) {
+                updateEventDateState.date = c.nlu.date;
+                sendToVoice(`Qual será a nova data do evento ${updateEventDateState.eventName}?`);
+              } else if (updateEventDateState.isAwaitingDetails && updateEventDateState.date != null && updateEventDateState.newStartDate == null) {
+                updateEventDateState.newStartDate = c.nlu.date;
+                sendToVoice(`Qual será a nova hora do evento ${updateEventDateState.eventName}?`);
+              }
+            } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "provide_date" && (c.nlu.confidence >= 0.45 && c.nlu.confidence < 0.8)) {
+              let formattedProvidedDate = new Date(c.nlu.date).toLocaleDateString("pt-PT", { year: "numeric", month: "long", day: "numeric" });
+              if (addEventToCalendarState.isAwaitingDetails) {
+                sendToVoice(`Percebi que a data do evento é ${formattedProvidedDate}. Está correta?`);
+              } else if (updateEventDateState.isAwaitingDetails && updateEventDateState.date == null) {
+                sendToVoice(`Percebi que a data atual do evento é ${formattedProvidedDate}. Está correta?`);
+              } else if (updateEventDateState.isAwaitingDetails && updateEventDateState.date != null && updateEventDateState.newStartDate == null) {
+                sendToVoice(`Percebi que a nova data do evento será ${formattedProvidedDate}. Está correta?`);
+              }
+              confirmationState.isConfirming = true;
+              confirmationState.pendingIntent = "provide_date";
+              confirmationState.data = c.nlu;
+            }
+
+            if (c.hasOwnProperty("nlu") && c.nlu.intent == "provide_time" && c.nlu.confidence >= 0.8) {
+              if (updateEventDateState.isAwaitingDetails && updateEventDateState.date != null && updateEventDateState.newStartDate != null) {
+                let isoTimestamp = `${updateEventDateState.newStartDate}T${c.nlu.time}:00+01:00`;
+                let body = {
+                  summary: updateEventDateState.eventName,
+                  date: updateEventDateState.date,
+                  new_start: isoTimestamp
+                };
+
+                update_event_date(body);
+
+                updateEventDateState.isAwaitingDetails = false;
+                updateEventDateState.eventName = null;
+                updateEventDateState.date = null;
+                updateEventDateState.newStartDate = null;
+              }
+            } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "provide_time" && (c.nlu.confidence >= 0.45 && c.nlu.confidence < 0.8)) {
+              if (updateEventDateState.isAwaitingDetails && updateEventDateState.date != null && updateEventDateState.newStartDate != null) {
+                sendToVoice(`Percebi que a nova hora do evento será ${c.nlu.time}. Está correta?`);
+                confirmationState.isConfirming = true;
+                confirmationState.pendingIntent = "provide_time";
+                confirmationState.data = c.nlu;
+              }
+            }
+
+            if (c.hasOwnProperty("nlu") && c.nlu.intent == "list_all_events" && c.nlu.confidence >= 0.8) {
+              list_all_events();
+            } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "list_all_events" && (c.nlu.confidence >= 0.45 && c.nlu.confidence < 0.8)) {
+              sendToVoice("Percebi que queres listar todos os eventos do teu calendário. Está correto?");
+              confirmationState.isConfirming = true;
+              confirmationState.pendingIntent = "list_all_events";
+              confirmationState.data = null;
+            }
+
+            if (c.hasOwnProperty("nlu") && c.nlu.intent == "delete_event" && c.nlu.confidence >= 0.8) {
               let body = {
                 summary: c.nlu.event,
                 date: c.nlu.date
-              }
-
-              // make a DELETE request to the Google Calendar API (localhost:8080/events)
-              $.ajax({
-                url: "http://localhost:8080/events", // URL do endpoint
-                method: "DELETE",
-                data: JSON.stringify(body),
-                contentType: "application/json",
-                success: function (data) {
-                  if (data.hasOwnProperty("message") && data.message === "Event deleted") {
-                    event = data.event.summary;
-                    eventDate = new Date(data.event.start);
-                    const options = { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
-                    const formattedDate = eventDate.toLocaleDateString("pt-PT", options);
-                    sendToVoice(`Evento ${event} marcado para ${formattedDate} foi removido com sucesso.`);
-                  } else {
-                    sendToVoice("Não encontrei nenhum evento com essas informações.");
-                  }
-                },
-                error: function (error) {
-                  console.error("Erro ao deletar evento:", error);
-                  sendToVoice("Ocorreu um erro ao deletar o evento. Tente novamente mais tarde.");
-                }
-              });
+              };
+              delete_event(body);
+            } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "delete_event" && (c.nlu.confidence >= 0.45 && c.nlu.confidence < 0.8)) {
+              sendToVoice("Percebi que queres apagar um evento do teu calendário. Está correto?");
+              confirmationState.isConfirming = true;
+              confirmationState.pendingIntent = "delete_event";
+              confirmationState.data = c.nlu;
             }
 
-            if (c.hasOwnProperty("nlu") && c.nlu.intent == "list_events_of_a_day") {
+            if (c.hasOwnProperty("nlu") && c.nlu.intent == "list_events_of_a_day" && c.nlu.confidence >= 0.8) {
               let eventDate = c.nlu.date; // Date in "YYYY-MM-DD" format
 
-              // Perform GET request to fetch events for the specific day
-              $.ajax({
-                url: `http://localhost:8080/events/day?date=${eventDate}`, // Pass the date as a query parameter
-                method: "GET",
-                success: function (data) {
-                  if (Array.isArray(data) && data.length > 0) {
-                    // Format and send the events list to the voice assistant
-                    data.forEach(event => {
-                      const eventStart = new Date(event.start);
-                      const eventEnd = new Date(event.end);
-                      const options = { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
-                      const formattedStart = eventStart.toLocaleDateString("pt-PT", options);
-                      const formattedEnd = eventEnd.toLocaleDateString("pt-PT", options);
+              list_events_of_a_day(eventDate);
+            } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "list_events_of_a_day" && (c.nlu.confidence >= 0.45 && c.nlu.confidence < 0.8)) {
+              sendToVoice("Percebi que queres listar os eventos de um dia específico. Está correto?");
+              confirmationState.isConfirming = true;
+              confirmationState.pendingIntent = "list_events_of_a_day";
+              confirmationState.data = c.nlu;
+            }
 
-                      let message = `Evento: ${event.summary}. Começa às ${formattedStart} e termina às ${formattedEnd}.`;
+            if (c.hasOwnProperty("nlu") && c.nlu.intent == "list_holidays" && c.nlu.confidence >= 0.8) {
+              list_holidays();
+            } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "list_holidays" && (c.nlu.confidence >= 0.45 && c.nlu.confidence < 0.8)) {
+              sendToVoice("Percebi que queres listar os feriados portugueses e outras comemorações. Está correto?");
+              confirmationState.isConfirming = true;
+              confirmationState.pendingIntent = "list_holidays";
+              confirmationState.data = null;
+            }
 
-                      if (event.description) {
-                        message += ` Descrição: ${event.description}.`;
-                      }
+            if (c.hasOwnProperty("nlu") && c.nlu.intent == "update_event_date" && c.nlu.confidence >= 0.8) {
+              updateEventDateState.isAwaitingDetails = true;
+              sendToVoice(`Qual é o nome do evento que queres atualizar a data?`);
+            } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "update_event_date" && (c.nlu.confidence >= 0.45 && c.nlu.confidence < 0.8)) {
+              sendToVoice(`Percebi que queres atualizar a data de um evento. Está correto?`);
+              confirmationState.isConfirming = true;
+              confirmationState.pendingIntent = "update_event_date";
+              confirmationState.data = c.nlu;
+            }
 
-                      if (event.location) {
-                        message += ` Localização: ${event.location}.`;
-                      }
+            if (c.hasOwnProperty("nlu") && c.nlu.intent == "list_birthdays" && c.nlu.confidence >= 0.8) {
+              list_birthdays();
+            } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "list_birthdays" && (c.nlu.confidence >= 0.45 && c.nlu.confidence < 0.8)) {
+              sendToVoice("Percebi que queres listar os aniversários. Está correto?");
+              confirmationState.isConfirming = true;
+              confirmationState.pendingIntent = "list_birthdays";
+              confirmationState.data = null;
+            }
 
-                      sendToVoice(message);
-                    });
-                  } else {
-                    sendToVoice("Nenhum evento encontrado para esta data.");
-                  }
-                },
-                error: function (error) {
-                  console.error("Erro ao buscar eventos:", error);
-                  sendToVoice("Ocorreu um erro ao buscar eventos. Tente novamente mais tarde.");
-                }
-              });
+            if (c.hasOwnProperty("nlu") && c.nlu.intent == "create_calendar" && c.nlu.confidence >= 0.8) {
+              let calendarName = c.nlu.calendar;
+
+              create_calendar(calendarName);
+            } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "create_calendar" && (c.nlu.confidence >= 0.45 && c.nlu.confidence < 0.8)) {
+              sendToVoice("Percebi que queres criar um novo calendário. Está correto?");
+              confirmationState.isConfirming = true;
+              confirmationState.pendingIntent = "create_calendar";
+              confirmationState.data = c.nlu;
+            }
+
+            if (c.hasOwnProperty("nlu") && c.nlu.intent == "delete_calendar" && c.nlu.confidence >= 0.8) {
+              let calendarName = c.nlu.calendar;
+
+              delete_calendar(calendarName);
+            } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "delete_calendar" && (c.nlu.confidence >= 0.45 && c.nlu.confidence < 0.8)) {
+              sendToVoice("Percebi que queres apagar um calendário. Está correto?");
+              confirmationState.isConfirming = true;
+              confirmationState.pendingIntent = "delete_calendar";
+              confirmationState.data = c.nlu;
+            }
+
+            if (c.hasOwnProperty("nlu") && c.nlu.intent == "add_event_to_calendar" && c.nlu.confidence >= 0.8) {
+              addEventToCalendarState.isAwaitingDetails = true;
+              addEventToCalendarState.calendarName = c.nlu.calendar;
+              sendToVoice(`Qual é o nome do evento que queres mover?`);
+            } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "add_event_to_calendar" && (c.nlu.confidence >= 0.45 && c.nlu.confidence < 0.8)) {
+              sendToVoice(`Percebi que queres mover um evento para o calendário ${c.nlu.calendar}. Está correto?`);
+              confirmationState.isConfirming = true;
+              confirmationState.pendingIntent = "add_event_to_calendar";
+              confirmationState.data = c.nlu;
+            }
+
+            if (c.hasOwnProperty("nlu") && c.nlu.intent == "list_events_in_calendar" && c.nlu.confidence >= 0.8) {
+              let calendarName = c.nlu.calendar;
+
+              list_events_in_calendar(calendarName);
             }
 
             /*setTimeout(function(){

@@ -23,7 +23,6 @@ class EventMoveCriteria(BaseModel):
     summary: str
     date: str  # Accept only the date in YYYY-MM-DD format
     new_start: str
-    new_end: str
 
 class EventMoveToCalendarCriteria(BaseModel):
     summary: str

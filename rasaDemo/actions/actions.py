@@ -26,13 +26,12 @@
 #
 #         return []
 
-from typing import Any, Text, Dict, List
+import json
+from typing import Any, Dict, List, Text
 
 from rasa_sdk import Action, Tracker
-from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.events import SlotSet, UserUtteranceReverted
-
-import json
+from rasa_sdk.executor import CollectingDispatcher
 
 
 def write_log(text):

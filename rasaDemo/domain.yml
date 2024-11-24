@@ -4,14 +4,26 @@ intents:
 - goodbye
 - affirm
 - deny
+# - provide_event
+- provide_event_name
+- provide_date
+- provide_time
 - list_all_events
+- delete_event
+- list_events_of_a_day
 - list_holidays
 - list_birthdays
+- create calendar
+- delete_calendar
+- add_event_to_calendar
+- list_events_in_calendar
 entities:
 - place
 - switch
 - shape
 - color
+- event
+- calendar
 slots:
   switch:
     type: text

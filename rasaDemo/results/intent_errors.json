@@ -1,0 +1,10 @@
+[
+  {
+    "text": "Boa noite, Calendário",
+    "intent": "goodbye",
+    "intent_prediction": {
+      "name": "greet",
+      "confidence": 0.5404888987541199
+    }
+  }
+]

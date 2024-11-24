@@ -6,7 +6,16 @@ recipe: default.v1
 # https://rasa.com/docs/rasa/nlu/components/
 language: pt
 
-pipeline: null
+pipeline:
+  - name: WhitespaceTokenizer
+  - name: RegexFeaturizer
+  - name: LexicalSyntacticFeaturizer
+  - name: CountVectorsFeaturizer
+  - name: DIETClassifier
+    epochs: 100
+    constrain_similarities: true
+  - name: EntitySynonymMapper
+
 # # No configuration for the NLU pipeline was provided. The following default pipeline was used to train your model.
 # # If you'd like to customize it, uncomment and adjust the pipeline.
 # # See https://rasa.com/docs/rasa/tuning-your-model for more information.
@@ -49,7 +58,7 @@ policies:
   # Confidence threshold for the `core_fallback_action_name` to apply.
   # The action will apply if no other action was predicted with
   # a confidence >= core_fallback_threshold
-  core_fallback_threshold: 0.80
+  core_fallback_threshold: 0.45
   core_fallback_action_name: "action_default_fallback"
   enable_fallback_prediction: true
 
