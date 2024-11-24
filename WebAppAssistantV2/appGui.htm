@@ -12,44 +12,63 @@
 
   <style>
     body {
-      --indicator-color: black;
-      background: #fff;
-      /*radial-gradient(#fff 75%, var(--indicator-color));*/
-      min-height: 100vh;
-      color: burlywood;
-      font-family: Poppins;
+      background-color: #FFFFFF;
+      color: #202124;
+      /* Cinza escuro Google */
+      font-family: 'Roboto', sans-serif;
       margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    h1 {
+      background-color: #4285F4;
+      /* Azul Google */
+      color: #FFFFFF;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+      font-size: 28px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      /* Sombra leve */
+    }
+
+    .list-container {
+      margin: 20px auto;
+      width: 80%;
+      max-width: 600px;
+      background-color: #F1F3F4;
+      /* Fundo claro Google */
+      border: 2px solid #34A853;
+      /* Verde Google */
+      padding: 20px;
+      font-size: 18px;
+      color: #202124;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      display: none;
+      /* Esconde inicialmente */
+    }
+
+    .list-title {
+      font-size: 20px;
+      margin-bottom: 10px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    ul {
+      list-style-type: none;
       padding: 0;
     }
 
-    .mic {
-      width: 150px;
+    li {
+      padding: 8px 0;
+      border-bottom: 1px solid #ddd;
     }
 
-    .container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      border-radius: 10px;
-      background-color: #f0f0f0;
-    }
-
-    .responseText {
-      border: solid 2px #8ea7cf;
-      margin: 2%;
-      color: #41683a;
-    }
-
-    .bottomNav {
-
-      position: absolute;
-      bottom: 2%;
-      width: 95%;
-    }
-
-    .recognized {
-      font-size: x-large;
+    li:last-child {
+      border-bottom: none;
     }
   </style>
 </head>
@@ -57,19 +76,30 @@
 <body>
   <h1 style="background-color: #4F5D73; margin: 0;">Google Calendar Voice Assistant</h1>
 
+  <!-- Containers para as listagens -->
+  <div id="all-events" class="list-container">
+    <div class="list-title">Todos os Eventos</div>
+    <ul id="all-events-list"></ul>
+  </div>
 
+  <div id="events-of-day" class="list-container">
+    <div id="events-of-day-title" class="list-title"></div>
+    <ul id="events-of-day-list"></ul>
+  </div>
 
-  <div id="response" class="" style="">d</div>
+  <div id="holidays" class="list-container">
+    <div class="list-title">Feriados Portugueses</div>
+    <ul id="holidays-list"></ul>
+  </div>
 
-  <div style="width: 500px;">
+  <div id="birthdays" class="list-container">
+    <div class="list-title">Aniversários</div>
+    <ul id="birthdays-list"></ul>
+  </div>
 
-
-    <svg class="a" id="a" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-      x="0px" y="0px" viewBox="0 0 320 100" style="enable-background:new 0 0 320 100;" xml:space="preserve">
-      <polygon points="50, 0, 0,100,100,100" class="triangle" />
-      <rect x="110" width="100" height="100" class="square" />
-      <circle cx="270" cy="50" r="50" class="circle" />
-    </svg>
+  <div id="calendar-events" class="list-container">
+    <div id="calendar-events-title" class="list-title"></div>
+    <ul id="calendar-events-list"></ul>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@latest/dist/svg.min.js"></script>
@@ -99,20 +129,34 @@
       }
     }
 
+    // let circle = SVG.find('.circle');
+    // let square = SVG.find('.square');
+    // let triangle = SVG.find('.triangle');
 
-    let circle = SVG.find('.circle');
-    let square = SVG.find('.square');
-    let triangle = SVG.find('.triangle');
+    // circle.animate().attr({ fill: '#ccc' });
+    // square.animate().attr({ fill: '#ccc' });
+    // triangle.animate().attr({ fill: '#ccc' });
 
-    circle.animate().attr({ fill: '#ccc' });
-    square.animate().attr({ fill: '#ccc' });
-    triangle.animate().attr({ fill: '#ccc' });
+    function hideAllLists() {
+      document.querySelectorAll(".list-container").forEach(container => {
+        container.style.display = "none";
+      });
+    }
 
     let confirmationState = {
       isConfirming: false,
       pendingIntent: null,
       data: null // data to be confirmed
     };
+
+    let createEventState = {
+      isAwaitingDetails: false,
+      eventName: null,
+      eventStartDate: null,
+      eventStartTime: null,
+      eventEndDate: null,
+      eventEndTime: null,
+    }
 
     let addEventToCalendarState = {
       isAwaitingDetails: false,
@@ -134,14 +178,26 @@
         method: "GET",
         success: function (data) {
           if (Array.isArray(data) && data.length > 0) {
-            sendToVoice("Ok, aqui tens a lista de todos os eventos no teu calendário:");
-            data.forEach(event => {
+            sendToVoice("Ok, aqui tens a lista de todos os eventos:");
+            data.reverse().forEach(event => {
               const eventDate = new Date(event.start); // Converte a string ISO para objeto Date
               const options = { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
               const formattedDate = eventDate.toLocaleDateString("pt-PT", options); // Formata a data no estilo português
               const message = `Tens o evento ${event.summary} marcado para ${formattedDate}.`;
               sendToVoice(message); // Envia para o assistente de voz
             });
+            const items = data.reverse().map(event => {
+              const eventDate = new Date(event.start); // Converte a string ISO para objeto Date
+              const options = { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
+              const formattedDate = eventDate.toLocaleDateString("pt-PT", options); // Formata a data no estilo português
+              return `<li>${event.summary} - ${formattedDate}</li>`;
+            });
+
+            hideAllLists();
+
+            const allEventsList = document.getElementById("all-events-list");
+            allEventsList.innerHTML = items.join("");
+            document.getElementById("all-events").style.display = "block";
           } else {
             sendToVoice("Não encontrei nenhum evento no teu calendário.");
           }
@@ -149,6 +205,26 @@
         error: function (error) {
           console.error("Erro ao buscar eventos:", error);
           sendToVoice("Ocorreu um erro ao listar os eventos. Tenta novamente mais tarde.");
+        }
+      });
+    }
+
+    function create_event(body) {
+      $.ajax({
+        url: "http://localhost:8080/events",
+        method: "POST",
+        data: JSON.stringify(body),
+        contentType: "application/json",
+        success: function (data) {
+          if (data.hasOwnProperty("message") && data.message === "Event created") {
+            sendToVoice(`Evento "${body.summary}" foi criado com sucesso.`);
+          } else {
+            sendToVoice("Não foi possível criar o evento. Verifica os detalhes e tenta novamente.");
+          }
+        },
+        error: function (error) {
+          console.error("Erro ao criar o evento:", error);
+          sendToVoice("Ocorreu um erro ao criar o evento. Tenta novamente mais tarde.");
         }
       });
     }
@@ -182,20 +258,33 @@
     }
 
     function list_events_of_a_day(eventDate) {
-      // make a GET request to the Google Calendar API (localhost:8080/events/date)
       $.ajax({
-        url: `http://localhost:8080/events/date?date=${eventDate}`, // Pass the date as a query parameter
+        url: `http://localhost:8080/events/day?date=${eventDate}`, // Pass the date as a query parameter
         method: "GET",
         success: function (data) {
           if (Array.isArray(data) && data.length > 0) {
             sendToVoice(`Ok, aqui tens a lista de eventos para o dia ${eventDate}:`);
-            data.forEach(event => {
+            data.reverse().forEach(event => {
               const eventDate = new Date(event.start); // Converte a string ISO para objeto Date
               const options = { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
               const formattedDate = eventDate.toLocaleDateString("pt-PT", options); // Formata a data no estilo português
               const message = `Tens o evento ${event.summary} marcado para ${formattedDate}.`;
               sendToVoice(message); // Envia para o assistente de voz
             });
+            const items = data.reverse().map(event => {
+              const eventDate = new Date(event.start); // Converte a string ISO para objeto Date
+              const options = { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
+              const formattedDate = eventDate.toLocaleDateString("pt-PT", options); // Formata a data no estilo português
+              return `<li>${event.summary} - ${formattedDate}</li>`;
+            });
+
+            hideAllLists();
+
+            const eventsOfDayList = document.getElementById("events-of-day-list");
+            eventsOfDayList.innerHTML = items.join("");
+            const formattedProvidedDate = new Date(eventDate).toLocaleDateString("pt-PT", { year: "numeric", month: "long", day: "numeric" });
+            document.getElementById("events-of-day-title").innerText = `Eventos de ${formattedProvidedDate}`;
+            document.getElementById("events-of-day").style.display = "block";
           } else {
             sendToVoice("Não encontrei nenhum evento marcado para esse dia.");
           }
@@ -215,13 +304,25 @@
         success: function (data) {
           if (Array.isArray(data) && data.length > 0) {
             sendToVoice("Aqui estão os feriados e outras comemorações que encontrei");
-            data.forEach(holiday => {
+            data.reverse().forEach(holiday => {
               const holidayDate = new Date(holiday.start); // Converte a string ISO para objeto Date
               const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
               const formattedDate = holidayDate.toLocaleDateString("pt-PT", options); // Formata a data no estilo português
               const message = `${holiday.summary}, será na ${formattedDate}.`;
               sendToVoice(message); // Envia para o assistente de voz
             });
+            const items = data.reverse().map(holiday => {
+              const holidayDate = new Date(holiday.start); // Converte a string ISO para objeto Date
+              const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
+              const formattedDate = holidayDate.toLocaleDateString("pt-PT", options); // Formata a data no estilo português
+              return `<li>${holiday.summary} - ${formattedDate}</li>`;
+            });
+
+            hideAllLists();
+
+            const holidaysList = document.getElementById("holidays-list");
+            holidaysList.innerHTML = items.join("");
+            document.getElementById("holidays").style.display = "block";
           } else {
             sendToVoice("Não encontrei nenhum feriado ou comemoração no calendário.");
           }
@@ -271,13 +372,25 @@
         method: "GET",
         success: function (data) {
           if (Array.isArray(data) && data.length > 0) {
-            data.forEach(birthday => {
+            data.reverse().forEach(birthday => {
               const birthdayDate = new Date(birthday.start); // Converte a string ISO para objeto Date
               const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
               const formattedDate = birthdayDate.toLocaleDateString("pt-PT", options); // Formata a data no estilo português
               const message = `Tens o aniversário ${birthday.summary}, na ${formattedDate}.`;
               sendToVoice(message); // Envia para o assistente de voz
             });
+            const items = data.reverse().map(birthday => {
+              const birthdayDate = new Date(birthday.start); // Converte a string ISO para objeto Date
+              const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
+              const formattedDate = birthdayDate.toLocaleDateString("pt-PT", options); // Formata a data no estilo português
+              return `<li>${birthday.summary} - ${formattedDate}</li>`;
+            });
+
+            hideAllLists();
+
+            const birthdaysList = document.getElementById("birthdays-list");
+            birthdaysList.innerHTML = items.join("");
+            document.getElementById("birthdays").style.display = "block";
           } else {
             sendToVoice("Não encontrei nenhum aniversário.");
           }
@@ -376,13 +489,26 @@
         success: function (data) {
           if (Array.isArray(data) && data.length > 0) {
             sendToVoice(`Aqui estão os eventos no calendário ${calendarName}:`);
-            data.forEach(event => {
+            data.reverse().forEach(event => {
               const eventDate = new Date(event.start); // Converte a string ISO para objeto Date
               const options = { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
               const formattedDate = eventDate.toLocaleDateString("pt-PT", options); // Formata a data no estilo português
               const message = `Tens o evento ${event.summary} marcado para ${formattedDate}.`;
               sendToVoice(message); // Envia para o assistente de voz
             });
+            const items = data.reverse().map(event => {
+              const eventDate = new Date(event.start); // Converte a string ISO para objeto Date
+              const options = { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
+              const formattedDate = eventDate.toLocaleDateString("pt-PT", options); // Formata a data no estilo português
+              return `<li>${event.summary} - ${formattedDate}</li>`;
+            });
+
+            hideAllLists();
+
+            const calendarEventsList = document.getElementById("calendar-events-list");
+            calendarEventsList.innerHTML = items.join("");
+            document.getElementById("calendar-events-title").innerText = `Eventos no calendário ${calendarName}`;
+            document.getElementById("calendar-events").style.display = "block";
           } else {
             sendToVoice(`Não encontrei nenhum evento no calendário ${calendarName}.`);
           }
@@ -419,6 +545,9 @@
             if (c.hasOwnProperty("nlu") && c.nlu.intent == "affirm" && confirmationState.isConfirming) {
               if (confirmationState.pendingIntent === "list_all_events") {
                 list_all_events();
+              } else if (confirmationState.pendingIntent === "create_event") {
+                createEventState.isAwaitingDetails = true;
+                sendToVoice("Qual vai ser o nome do evento?");
               } else if (confirmationState.pendingIntent === "delete_event") {
                 let body = {
                   summary: confirmationState.data.event,
@@ -448,6 +577,9 @@
                 } else if (updateEventDateState.isAwaitingDetails) {
                   updateEventDateState.eventName = confirmationState.data.event;
                   sendToVoice(`Qual é a data atual do evento ${updateEventDateState.eventName}?`);
+                } else if (createEventState.isAwaitingDetails) {
+                  createEventState.eventName = confirmationState.data.event;
+                  sendToVoice(`Qual vai ser a data de início do evento ${createEventState.eventName}?`);
                 }
               } else if (confirmationState.pendingIntent === "provide_date") {
                 if (addEventToCalendarState.isAwaitingDetails) {
@@ -467,13 +599,16 @@
                 } else if (updateEventDateState.isAwaitingDetails && updateEventDateState.date != null && updateEventDateState.newStartDate == null) {
                   updateEventDateState.newStartDate = confirmationState.data.date;
                   sendToVoice(`Qual será a nova hora do evento ${updateEventDateState.eventName}?`);
+                } else if (createEventState.isAwaitingDetails && createEventState.eventStartDate == null) {
+                  createEventState.eventStartDate = confirmationState.data.date;
+                  sendToVoice(`Qual vai ser a hora de início do evento ${createEventState.eventName}?`);
                 }
               } else if (confirmationState.pendingIntent === "update_event_date") {
                 updateEventDateState.isAwaitingDetails = true;
                 sendToVoice(`Qual é o nome do evento que queres atualizar a data?`);
               } else if (confirmationState.pendingIntent === "provide_time") {
                 if (updateEventDateState.isAwaitingDetails && updateEventDateState.date != null && updateEventDateState.newStartDate != null) {
-                  let isoTimestamp = `${updateEventDateState.newStartDate}T${confirmationState.data.time}:00+01:00`;
+                  let isoTimestamp = `${updateEventDateState.newStartDate}T${confirmationState.data.time}:00+00:00`;
                   let body = {
                     summary: updateEventDateState.eventName,
                     date: updateEventDateState.date,
@@ -486,6 +621,27 @@
                   updateEventDateState.eventName = null;
                   updateEventDateState.date = null;
                   updateEventDateState.newStartDate = null;
+                } else if (createEventState.isAwaitingDetails && createEventState.eventStartDate != null && createEventState.eventStartTime == null) {
+                  createEventState.eventStartTime = confirmationState.data.time;
+                  sendToVoice(`Qual vai ser a data de fim do evento ${createEventState.eventName}?`);
+                } else if (createEventState.isAwaitingDetails && createEventState.eventEndDate != null && createEventState.eventEndTime == null) {
+                  createEventState.eventEndTime = confirmationState.data.time;
+                  let isoStartTimestamp = `${createEventState.eventStartDate}T${createEventState.eventStartTime}:00+00:00`;
+                  let isoEndTimestamp = `${createEventState.eventEndDate}T${createEventState.eventEndTime}:00+00:00`;
+                  let body = {
+                    summary: createEventState.eventName,
+                    start: isoStartTimestamp,
+                    end: isoEndTimestamp
+                  };
+
+                  create_event(body);
+
+                  createEventState.isAwaitingDetails = false;
+                  createEventState.eventName = null;
+                  createEventState.eventStartDate = null;
+                  createEventState.eventStartTime = null;
+                  createEventState.eventEndDate = null;
+                  createEventState.eventEndTime = null;
                 }
               }
               confirmationState.isConfirming = false;
@@ -507,14 +663,19 @@
               } else if (updateEventDateState.isAwaitingDetails) {
                 updateEventDateState.eventName = c.nlu.event;
                 sendToVoice(`Qual é a data atual do evento ${updateEventDateState.eventName}?`);
+              } else if (createEventState.isAwaitingDetails) {
+                createEventState.eventName = c.nlu.event;
+                sendToVoice(`Qual vai ser a data de início do evento ${createEventState.eventName}?`);
               }
             } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "provide_event_name" && (c.nlu.name_confidence >= 0.45 && c.nlu.name_confidence < 0.8)) {
               if (addEventToCalendarState.isAwaitingDetails || updateEventDateState.isAwaitingDetails) {
                 sendToVoice(`Percebi que o evento chama-se ${c.nlu.event}. Está correto?`);
-                confirmationState.isConfirming = true;
-                confirmationState.pendingIntent = "provide_event_name";
-                confirmationState.data = c.nlu;
+              } else if (createEventState.isAwaitingDetails) {
+                sendToVoice(`Percebi que o nome do evento será ${c.nlu.event}. Está correto?`);
               }
+              confirmationState.isConfirming = true;
+              confirmationState.pendingIntent = "provide_event_name";
+              confirmationState.data = c.nlu;
             }
 
             if (c.hasOwnProperty("nlu") && c.nlu.intent == "provide_date" && c.nlu.confidence >= 0.8) {
@@ -535,6 +696,12 @@
               } else if (updateEventDateState.isAwaitingDetails && updateEventDateState.date != null && updateEventDateState.newStartDate == null) {
                 updateEventDateState.newStartDate = c.nlu.date;
                 sendToVoice(`Qual será a nova hora do evento ${updateEventDateState.eventName}?`);
+              } else if (createEventState.isAwaitingDetails && createEventState.eventStartDate == null) {
+                createEventState.eventStartDate = c.nlu.date;
+                sendToVoice(`Qual vai ser a hora de início do evento ${createEventState.eventName}?`);
+              } else if (createEventState.isAwaitingDetails && createEventState.eventEndDate == null) {
+                createEventState.eventEndDate = c.nlu.date;
+                sendToVoice(`Qual vai ser a hora de fim do evento ${createEventState.eventName}?`);
               }
             } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "provide_date" && (c.nlu.confidence >= 0.45 && c.nlu.confidence < 0.8)) {
               let formattedProvidedDate = new Date(c.nlu.date).toLocaleDateString("pt-PT", { year: "numeric", month: "long", day: "numeric" });
@@ -544,6 +711,10 @@
                 sendToVoice(`Percebi que a data atual do evento é ${formattedProvidedDate}. Está correta?`);
               } else if (updateEventDateState.isAwaitingDetails && updateEventDateState.date != null && updateEventDateState.newStartDate == null) {
                 sendToVoice(`Percebi que a nova data do evento será ${formattedProvidedDate}. Está correta?`);
+              } else if (createEventState.isAwaitingDetails && createEventState.eventStartDate == null) {
+                sendToVoice(`Percebi que a data de início do evento será ${formattedProvidedDate}. Está correta?`);
+              } else if (createEventState.isAwaitingDetails && createEventState.eventEndDate == null) {
+                sendToVoice(`Percebi que a data de fim do evento será ${formattedProvidedDate}. Está correta?`);
               }
               confirmationState.isConfirming = true;
               confirmationState.pendingIntent = "provide_date";
@@ -552,7 +723,7 @@
 
             if (c.hasOwnProperty("nlu") && c.nlu.intent == "provide_time" && c.nlu.confidence >= 0.8) {
               if (updateEventDateState.isAwaitingDetails && updateEventDateState.date != null && updateEventDateState.newStartDate != null) {
-                let isoTimestamp = `${updateEventDateState.newStartDate}T${c.nlu.time}:00+01:00`;
+                let isoTimestamp = `${updateEventDateState.newStartDate}T${c.nlu.time}:00+00:00`;
                 let body = {
                   summary: updateEventDateState.eventName,
                   date: updateEventDateState.date,
@@ -565,23 +736,58 @@
                 updateEventDateState.eventName = null;
                 updateEventDateState.date = null;
                 updateEventDateState.newStartDate = null;
+              } else if (createEventState.isAwaitingDetails && createEventState.eventStartDate != null && createEventState.eventStartTime == null) {
+                createEventState.eventStartTime = c.nlu.time;
+                sendToVoice(`Qual vai ser a data de fim do evento ${createEventState.eventName}?`);
+              } else if (createEventState.isAwaitingDetails && createEventState.eventEndDate != null && createEventState.eventEndTime == null) {
+                createEventState.eventEndTime = c.nlu.time;
+                let isoStartTimestamp = `${createEventState.eventStartDate}T${createEventState.eventStartTime}:00+00:00`;
+                let isoEndTimestamp = `${createEventState.eventEndDate}T${createEventState.eventEndTime}:00+00:00`;
+                let body = {
+                  summary: createEventState.eventName,
+                  start: isoStartTimestamp,
+                  end: isoEndTimestamp
+                };
+
+                create_event(body);
+
+                createEventState.isAwaitingDetails = false;
+                createEventState.eventName = null;
+                createEventState.eventStartDate = null;
+                createEventState.eventStartTime = null;
+                createEventState.eventEndDate = null;
+                createEventState.eventEndTime = null;
               }
             } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "provide_time" && (c.nlu.confidence >= 0.45 && c.nlu.confidence < 0.8)) {
               if (updateEventDateState.isAwaitingDetails && updateEventDateState.date != null && updateEventDateState.newStartDate != null) {
                 sendToVoice(`Percebi que a nova hora do evento será ${c.nlu.time}. Está correta?`);
-                confirmationState.isConfirming = true;
-                confirmationState.pendingIntent = "provide_time";
-                confirmationState.data = c.nlu;
+              } else if (createEventState.isAwaitingDetails && createEventState.eventStartDate != null && createEventState.eventStartTime == null) {
+                sendToVoice(`Percebi que a hora de início do evento será ${c.nlu.time}. Está correta?`);
+              } else if (createEventState.isAwaitingDetails && createEventState.eventEndDate != null && createEventState.eventEndTime == null) {
+                sendToVoice(`Percebi que a hora de fim do evento será ${c.nlu.time}. Está correta?`);
               }
+              confirmationState.isConfirming = true;
+              confirmationState.pendingIntent = "provide_time";
+              confirmationState.data = c.nlu;
             }
 
             if (c.hasOwnProperty("nlu") && c.nlu.intent == "list_all_events" && c.nlu.confidence >= 0.8) {
               list_all_events();
             } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "list_all_events" && (c.nlu.confidence >= 0.45 && c.nlu.confidence < 0.8)) {
-              sendToVoice("Percebi que queres listar todos os eventos do teu calendário. Está correto?");
+              sendToVoice("Percebi que queres listar todos os eventos. Está correto?");
               confirmationState.isConfirming = true;
               confirmationState.pendingIntent = "list_all_events";
               confirmationState.data = null;
+            }
+
+            if (c.hasOwnProperty("nlu") && c.nlu.intent == "create_event" && c.nlu.confidence >= 0.8) {
+              createEventState.isAwaitingDetails = true;
+              sendToVoice("Qual vai ser o nome do evento?");
+            } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "create_event" && (c.nlu.confidence >= 0.45 && c.nlu.confidence < 0.8)) {
+              sendToVoice("Percebi que queres criar um novo evento. Está correto?");
+              confirmationState.isConfirming = true;
+              confirmationState.pendingIntent = "create_event";
+              confirmationState.data = c.nlu;
             }
 
             if (c.hasOwnProperty("nlu") && c.nlu.intent == "delete_event" && c.nlu.confidence >= 0.8) {
@@ -591,7 +797,8 @@
               };
               delete_event(body);
             } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "delete_event" && (c.nlu.confidence >= 0.45 && c.nlu.confidence < 0.8)) {
-              sendToVoice("Percebi que queres apagar um evento do teu calendário. Está correto?");
+              let formattedProvidedDate = new Date(c.nlu.date).toLocaleDateString("pt-PT", { year: "numeric", month: "long", day: "numeric" });
+              sendToVoice(`Percebi que queres apagar o evento ${c.nlu.event} do dia ${formattedProvidedDate}. Está correto?`);
               confirmationState.isConfirming = true;
               confirmationState.pendingIntent = "delete_event";
               confirmationState.data = c.nlu;
@@ -602,7 +809,8 @@
 
               list_events_of_a_day(eventDate);
             } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "list_events_of_a_day" && (c.nlu.confidence >= 0.45 && c.nlu.confidence < 0.8)) {
-              sendToVoice("Percebi que queres listar os eventos de um dia específico. Está correto?");
+              let formattedProvidedDate = new Date(c.nlu.date).toLocaleDateString("pt-PT", { year: "numeric", month: "long", day: "numeric" });
+              sendToVoice(`Percebi que queres listar os eventos do dia ${formattedProvidedDate}. Está correto?`);
               confirmationState.isConfirming = true;
               confirmationState.pendingIntent = "list_events_of_a_day";
               confirmationState.data = c.nlu;
@@ -694,20 +902,20 @@
     var mmiCli_1 = null;
     mmiCli_1 = new MMIClient(null, "https://" + host + ":8000/IM/USER1/APPSPEECH");
 
-    circle.on('click', function () {
-      console.log("circulo");
-      sendToVoice("circulo");
-    })
+    // circle.on('click', function () {
+    //   console.log("circulo");
+    //   sendToVoice("circulo");
+    // })
 
-    square.on('click', function () {
-      console.log("quadrado");
-      sendToVoice("quadradoç");
-    })
+    // square.on('click', function () {
+    //   console.log("quadrado");
+    //   sendToVoice("quadradoç");
+    // })
 
-    triangle.on('click', function () {
-      console.log("triangulo");
-      sendToVoice("triangulo");
-    })
+    // triangle.on('click', function () {
+    //   console.log("triangulo");
+    //   sendToVoice("triangulo");
+    // })
 
     function sendToVoice(texto) {
       //let speak = "&lt;speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.w3.org/2001/10/synthesis http://www.w3.org/TR/speech-synthesis/synthesis.xsd\" xml:lang=\"pt-PT\"&gt;&lt;p&gt;" + "quadrado" + "&lt;/p&gt;&lt;/speak&gt";

@@ -7,8 +7,6 @@ from pydantic import BaseModel
 
 class EventCreate(BaseModel):
     summary: str
-    location: Optional[str] = None
-    description: Optional[str] = None
     start: str
     end: str
 

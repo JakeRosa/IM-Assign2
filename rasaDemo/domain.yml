@@ -9,6 +9,7 @@ intents:
 - provide_date
 - provide_time
 - list_all_events
+- create_event
 - delete_event
 - list_events_of_a_day
 - list_holidays
@@ -24,6 +25,7 @@ entities:
 - color
 - event
 - calendar
+- mês
 slots:
   switch:
     type: text

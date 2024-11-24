@@ -12,18 +12,27 @@
 
   <style>
     body {
-      --indicator-color: black;
-      background: #fff;
-      /*radial-gradient(#fff 75%, var(--indicator-color));*/
+      --indicator-color: #4285F4;
+      /* Azul Google */
+      background: #FFFFFF;
       min-height: 100vh;
-      color: burlywood;
-      font-family: Poppins;
+      color: #202124;
+      /* Cinza escuro Google */
+      font-family: 'Roboto', sans-serif;
+      /* Fonte usada pelo Google */
       margin: 0;
       padding: 0;
     }
 
-    .mic {
-      width: 150px;
+    h1 {
+      background-color: #4285F4;
+      /* Azul Google */
+      color: #FFFFFF;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+      font-size: 28px;
+      /* Tamanho maior para o título */
     }
 
     .container {
@@ -31,27 +40,73 @@
       align-items: center;
       justify-content: center;
       width: 100%;
+      padding: 15px;
       border-radius: 10px;
-      background-color: #f0f0f0;
+      background-color: #F1F3F4;
+      /* Fundo claro Google */
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      /* Sombra leve */
     }
 
     .responseText {
-      border: solid 2px #8ea7cf;
+      border: solid 2px #34A853;
+      /* Verde Google */
       margin: 2%;
-      color: #41683a;
+      color: #34A853;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 18px;
     }
 
     .bottomNav {
-
       position: absolute;
       bottom: 2%;
       width: 95%;
     }
 
     .recognized {
-      font-size: x-large;
+      font-size: 24px;
+      /* Tamanho maior para o texto detetado */
+      font-weight: bold;
+      /* Destacar o texto */
+      color: #202124;
+      /* Cinza escuro Google */
+      margin-left: 15px;
+    }
+
+    .mic {
+      width: 150px;
+      fill: #EA4335;
+      /* Vermelho Google */
+    }
+
+    svg .st01 {
+      fill: #EA4335;
+      /* Vermelho Google */
+    }
+
+    svg .st3 {
+      fill: #4285F4;
+      /* Azul Google */
+    }
+
+    svg .st4 {
+      fill: #34A853;
+      /* Verde Google */
+    }
+
+    #response {
+      background-color: #FFFFFF;
+      /* Vermelho Google */
+      padding: 10px;
+      font-size: 18px;
+      color: #202124;
+      /* Cinza escuro Google */
+      border-radius: 5px;
+      text-align: center;
     }
   </style>
+
 </head>
 
 <body>
@@ -66,7 +121,7 @@
 
 
   <div class="bottomNav">
-    <div id="response" class="" style="">d</div>
+    <div id="response" class="" style=""></div>
     <div class="container" style="border: solid 2px #4F5D73;margin: 2%;">
 
       <svg class="mic" id="mic" version="1.1" xmlns="http://www.w3.org/2000/svg"
@@ -291,6 +346,10 @@
 
         if (data.intent.name == 'list_all_events') {
           var message = { 'intent': 'list_all_events', 'confidence': data.intent.confidence };
+        }
+
+        if (data.intent.name == 'create_event') {
+          var message = { 'intent': 'create_event', 'confidence': data.intent.confidence };
         }
 
         // date must be in YYYY-MM-DD format

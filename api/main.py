@@ -49,39 +49,58 @@ async def list_all_events():
     creds = get_credentials()
     try:
         service = build("calendar", "v3", credentials=creds)
-        now = datetime.datetime.utcnow().isoformat() + "Z"  # 'Z' indicates UTC time
-        events_result = (
-            service.events()
-            .list(
-                calendarId="primary",
-                timeMin=now,
-                singleEvents=True,
-                orderBy="startTime",
-            )
-            .execute()
-        )
-        events = events_result.get("items", [])
+        
+        # List all calendars
+        calendars_result = service.calendarList().list().execute()
+        calendars = calendars_result.get("items", [])
 
-        if not events:
+        if not calendars:
+            return {"message": "No calendars found."}
+        
+        now = datetime.datetime.utcnow().isoformat() + "Z"  # 'Z' indicates UTC time
+        all_events = []
+
+        # Fetch events from all calendars
+        for calendar in calendars:
+            calendar_id = calendar["id"]
+            if calendar_id == "pt.portuguese#holiday@group.v.calendar.google.com":
+                continue
+            
+            events_result = (
+                service.events()
+                .list(
+                    calendarId=calendar_id,
+                    timeMin=now,
+                    singleEvents=True,
+                    orderBy="startTime",
+                )
+                .execute()
+            )
+            events = events_result.get("items", [])
+            
+            for event in events:
+                all_events.append({
+                    "start": event["start"].get("dateTime", event["start"].get("date")),
+                    "summary": event["summary"]
+                })
+
+        if not all_events:
             return {"message": "No upcoming events found."}
 
-        return [
-            {"start": event["start"].get("dateTime", event["start"].get("date")), "summary": event["summary"]}
-            for event in events
-        ]
+        return all_events
 
     except HttpError as error:
         raise HTTPException(status_code=500, detail=f"An error occurred: {error}")
+
     
 @app.post("/events")
 async def create_event(event: EventCreate):
     creds = get_credentials()
     try:
         service = build("calendar", "v3", credentials=creds)
+        # Define the event body with minimal fields
         event_body = {
             'summary': event.summary,
-            'location': event.location,
-            'description': event.description,
             'start': {
                 'dateTime': event.start,
                 'timeZone': 'Europe/Lisbon',
@@ -91,6 +110,7 @@ async def create_event(event: EventCreate):
                 'timeZone': 'Europe/Lisbon',
             },
         }
+        # Insert the event
         created_event = service.events().insert(calendarId='primary', body=event_body).execute()
         return {"message": "Event created", "event": created_event}
     except HttpError as error:
@@ -146,22 +166,34 @@ async def get_events_by_day(date: str = Query(..., description="Date in YYYY-MM-
     creds = get_credentials()
     try:
         service = build("calendar", "v3", credentials=creds)
-        start_of_day = f"{date}T00:00:00Z"
-        end_of_day = f"{date}T23:59:59Z"
-        events_result = (
-            service.events()
-            .list(
-                calendarId="primary",
-                timeMin=start_of_day,
-                timeMax=end_of_day,
-                singleEvents=True,
-                orderBy="startTime",
-            )
-            .execute()
-        )
-        events = events_result.get("items", [])
 
-        if not events:
+        # List all calendars
+        calendars_result = service.calendarList().list().execute()
+        calendars = calendars_result.get("items", [])
+
+        all_events = []
+
+        for calendar in calendars:
+            calendar_id = calendar["id"]
+
+            start_of_day = f"{date}T00:00:00Z"
+            end_of_day = f"{date}T23:59:59Z"
+
+            events_result = (
+                service.events()
+                .list(
+                    calendarId=calendar_id,
+                    timeMin=start_of_day,
+                    timeMax=end_of_day,
+                    singleEvents=True,
+                    orderBy="startTime",
+                )
+                .execute()
+            )
+            events = events_result.get("items", [])
+            all_events.extend(events)
+
+        if not all_events:
             return {"message": "No events found for this day."}
 
         return [
@@ -172,7 +204,7 @@ async def get_events_by_day(date: str = Query(..., description="Date in YYYY-MM-
                 "description": event.get("description"),
                 "location": event.get("location")
             }
-            for event in events
+            for event in all_events
         ]
 
     except HttpError as error:
@@ -211,13 +243,6 @@ async def get_portugal_holidays():
         ]
     except HttpError as error:
         raise HTTPException(status_code=500, detail=f"An error occurred: {error}")
-    
-import datetime
-
-from fastapi import HTTPException
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-
 
 @app.put("/events/move")
 async def move_event(criteria: EventMoveCriteria):

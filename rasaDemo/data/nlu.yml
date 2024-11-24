@@ -52,6 +52,13 @@ nlu:
     - Quero saber todos os eventos marcados
   
   # criar eventos
+- intent: create_event
+  examples: |
+    - Quero criar um novo evento
+    - Adiciona um novo evento à minha agenda
+    - Quero adicionar um novo evento ao meu calendário
+    - Quero adicionar um novo evento
+    - Insere um novo evento no meu calendário
 
   # eliminar eventos
 - intent: delete_event
@@ -134,7 +141,7 @@ nlu:
     - Faz um calendário chamado [Calendário de férias](calendar)
     - Quero criar o calendário [Calendário escolar](calendar)
     - Preciso de criar o calendário [Calendário de tarefas](calendar)
-    - Cria o calendário [Calendário da família](calendar)
+    - Cria o calendário [Calendário da família e amigos](calendar)
     - Adiciona um calendário chamado [Calendário de aniversários](calendar)
     - Faz o calendário [Calendário de consultas médicas](calendar)
     - Cria um calendário chamado [Calendário da universidade](calendar)
@@ -163,21 +170,6 @@ nlu:
     - Quero mover um evento para o [Calendário de desporto](calendar)
     - Move um evento para o [Calendário de consultas médicas](calendar)
     - Quero mudar um evento que já foi criado para o [Calendário de reuniões](calendar)
-
-# adiciona um evento existente a um calendário
-- intent: add_event_to_calendar
-  examples: |
-    - Adiciona um evento já existente ao [Calendário do trabalho](calendar)
-    - Quero colocar um evento já criado no [Calendário de aniversários](calendar)
-    - Move um evento existente para o [Calendário de desporto](calendar)
-    - Quero mover um evento para o [Calendário de marketing](calendar)
-    - Muda um evento que já existe para o [Calendário de tarefas](calendar)
-    - Quero transferir um evento para o [Calendário de projetos](calendar)
-    - Adiciona um evento existente ao [Calendário da família](calendar)
-    - Move um evento que já foi criado para o [Calendário de aniversários](calendar)
-    - Atualiza o [Calendário escolar](calendar) com um evento existente
-    - Adiciona um evento que já existe ao [Calendário de viagens](calendar)
-    - Quero mudar um evento existente para o [Calendário de esportes](calendar)
 
 # listar eventos de um calendário
 - intent: list_events_in_calendar
@@ -298,10 +290,20 @@ nlu:
   examples: |
     - \b(0?[1-9]|[12][0-9]|3[01])\b
 
-# Regex para meses
-- regex: mês
+- lookup: mês
   examples: |
-    - \b(janeiro|fevereiro|março|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\b
+    - janeiro
+    - fevereiro
+    - março
+    - abril
+    - maio
+    - junho
+    - julho
+    - agosto
+    - setembro
+    - outubro
+    - novembro
+    - dezembro
 
 # Regex para anos
 - regex: ano
