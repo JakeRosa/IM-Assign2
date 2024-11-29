@@ -65,7 +65,7 @@ async def list_all_events():
             calendar_id = calendar["id"]
             if calendar_id == "pt.portuguese#holiday@group.v.calendar.google.com":
                 continue
-
+            
             events_result = (
                 service.events()
                 .list(
@@ -281,11 +281,8 @@ async def move_event(criteria: EventMoveCriteria):
             )
             events = events_result.get("items", [])
 
-            event_duration = None
             for event in events:
                 event_start_date = event["start"].get("dateTime", event["start"].get("date")).split("T")[0]
-                event_end_date = event["end"].get("dateTime", event["end"].get("date")).split("T")[0]
-                event_duration = (datetime.datetime.fromisoformat(event_end_date) - datetime.datetime.fromisoformat(event_start_date)).days
                 normalized_event_summary = normalize_string(event["summary"])
                 if normalized_event_summary == normalized_criteria_summary and event_start_date == criteria.date:
                     event_to_move = event
@@ -298,8 +295,9 @@ async def move_event(criteria: EventMoveCriteria):
         if not event_to_move:
             return {"message": "No matching event found."}
 
+        # Calculate end time (2 hours after new_start)
         new_start_time = datetime.datetime.fromisoformat(criteria.new_start)
-        new_end_time = new_start_time + datetime.timedelta(days=event_duration)
+        new_end_time = new_start_time + datetime.timedelta(hours=2)
 
         # Update the event fields (start and end date)
         event_to_move['start'] = {'dateTime': criteria.new_start, 'timeZone': 'Europe/Lisbon'}

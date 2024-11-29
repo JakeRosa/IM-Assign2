@@ -165,3 +165,5 @@ cython_debug/
 CAroot.crt
 
 mmiframeworkV2
+
+api/credentials.json
