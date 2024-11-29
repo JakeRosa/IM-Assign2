@@ -602,6 +602,9 @@
                 } else if (createEventState.isAwaitingDetails && createEventState.eventStartDate == null) {
                   createEventState.eventStartDate = confirmationState.data.date;
                   sendToVoice(`Qual vai ser a hora de início do evento ${createEventState.eventName}?`);
+                } else if (createEventState.isAwaitingDetails && createEventState.eventEndDate == null) {
+                  createEventState.eventEndDate = confirmationState.data.date;
+                  sendToVoice(`Qual vai ser a hora de fim do evento ${createEventState.eventName}?`);
                 }
               } else if (confirmationState.pendingIntent === "update_event_date") {
                 updateEventDateState.isAwaitingDetails = true;
