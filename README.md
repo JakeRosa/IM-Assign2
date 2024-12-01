@@ -38,6 +38,7 @@ start_web_app.bat
 ## Google Calendar API
 
 - Follow the instructions from [Google Calendar - Python Quickstart](https://developers.google.com/calendar/api/quickstart/python)
+- Add your credentials.json to /api directory
 
 ```
 cd C:\path-to-api\api
