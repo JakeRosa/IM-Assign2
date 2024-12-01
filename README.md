@@ -6,7 +6,7 @@
 ```
 conda activate rasa-env
 
-cd C:\Users\andra\OneDrive\Ambiente de Trabalho\mei-IM\assigment2\aulas\DemoMMI\rasaDemo
+cd C:\path-to-rasaDemo\rasaDemo
 
 rasa train
 
