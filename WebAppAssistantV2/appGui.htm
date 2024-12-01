@@ -544,9 +544,7 @@
 
             if (c.hasOwnProperty("nlu") && c.nlu.intent == "affirm" && confirmationState.isConfirming) {
               if (confirmationState.pendingIntent === "help") {
-                sendToVoice("Aqui está a lista de todos os comandos que podes usar: ")
-                sendToVoice("Se queres listar todos os eventos diz: Lista todos os eventos")
-                sendToVoice("Se queres criar um evento diz: Quero criar um novo evento")
+                sendToVoice("Aqui está a lista de todos os comandos que podes usar: Se queres listar todos os eventos diz: Lista todos os eventos; Se queres criar um evento diz: Quero criar um novo evento")
               } else if (confirmationState.pendingIntent === "list_all_events") {
                 list_all_events();
               } else if (confirmationState.pendingIntent === "create_event") {
@@ -779,9 +777,7 @@
             }
 
             if (c.hasOwnProperty("nlu") && c.nlu.intent == "help" && c.nlu.confidence >= 0.8) {
-              sendToVoice("Aqui está a lista de todos os comandos que podes usar: ")
-              sendToVoice("Se queres listar todos os eventos diz: Lista todos os eventos")
-              sendToVoice("Se queres criar um evento diz: Quero criar um novo evento")
+              sendToVoice("Aqui está a lista de todos os comandos que podes usar: Se queres listar todos os eventos diz: Lista todos os eventos; Se queres criar um evento diz: Quero criar um novo evento")
             } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "help" && (c.nlu.confidence >= 0.45 && c.nlu.confidence < 0.8)) {
               sendToVoice("Percebi que precisas de ajuda. Está correto?");
               confirmationState.isConfirming = true;
