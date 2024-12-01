@@ -5,6 +5,7 @@ intents:
 - affirm
 - deny
 # - provide_event
+- help
 - provide_event_name
 - provide_date
 - provide_time

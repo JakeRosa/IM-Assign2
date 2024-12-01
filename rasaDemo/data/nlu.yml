@@ -38,6 +38,13 @@ nlu:
     - Acho que não
     - Não gosto assim
     - Nem por isso
+
+- intent: help
+  examples: |
+    - Preciso de ajuda
+    - Ajuda-me
+    - Dá-me informações
+    - Informações
   
 - intent: list_all_events
   examples: |
@@ -71,7 +78,7 @@ nlu:
     - Quero eliminar o evento [Jantar com família](event) no dia [8](dia) de [novembro](mês) de [2024](ano)
     - Exclui o evento [Treino de futebol](event) do dia [5](dia) de [abril](mês) de [2024](ano)
 
-  # eventos de uma data
+  # eventos de uma data 
 - intent: list_events_of_a_day
   examples: |
     - Lista todos os eventos do [25](dia) de [dezembro](mês) de [2024](ano)
@@ -174,7 +181,7 @@ nlu:
 # listar eventos de um calendário
 - intent: list_events_in_calendar
   examples: |
-    - Lista todos os eventos do [Calendário pessoal](calendar)
+    -   
     - Mostra os eventos do [Calendário do trabalho](calendar)
     - Quero ver os eventos no [Calendário de aniversários](calendar)
     - Diz-me os eventos que estão no [Calendário da equipa](calendar)

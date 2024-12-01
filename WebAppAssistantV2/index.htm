@@ -344,6 +344,10 @@
         //   var message = { 'intent': 'provide_event', 'confidence': data.intent.confidence, 'event': event, 'date': formattedDate };
         // }
 
+        if (data.intent.name == 'help') {
+          var message = { 'intent': 'help', 'confidence': data.intent.confidence };
+        }
+
         if (data.intent.name == 'list_all_events') {
           var message = { 'intent': 'list_all_events', 'confidence': data.intent.confidence };
         }

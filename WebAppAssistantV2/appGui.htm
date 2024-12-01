@@ -178,7 +178,7 @@
         method: "GET",
         success: function (data) {
           if (Array.isArray(data) && data.length > 0) {
-            sendToVoice("Ok, aqui tens a lista de todos os eventos:");
+            sendToVoice("Ok, aqui tens a lista de todos os eventos no teu calendário:");
             data.reverse().forEach(event => {
               const eventDate = new Date(event.start); // Converte a string ISO para objeto Date
               const options = { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
@@ -543,7 +543,11 @@
             }
 
             if (c.hasOwnProperty("nlu") && c.nlu.intent == "affirm" && confirmationState.isConfirming) {
-              if (confirmationState.pendingIntent === "list_all_events") {
+              if (confirmationState.pendingIntent === "help") {
+                sendToVoice("Aqui está a lista de todos os comandos que podes usar: ")
+                sendToVoice("Se queres listar todos os eventos diz: Lista todos os eventos")
+                sendToVoice("Se queres criar um evento diz: Quero criar um novo evento")
+              } else if (confirmationState.pendingIntent === "list_all_events") {
                 list_all_events();
               } else if (confirmationState.pendingIntent === "create_event") {
                 createEventState.isAwaitingDetails = true;
@@ -774,10 +778,21 @@
               confirmationState.data = c.nlu;
             }
 
+            if (c.hasOwnProperty("nlu") && c.nlu.intent == "help" && c.nlu.confidence >= 0.8) {
+              sendToVoice("Aqui está a lista de todos os comandos que podes usar: ")
+              sendToVoice("Se queres listar todos os eventos diz: Lista todos os eventos")
+              sendToVoice("Se queres criar um evento diz: Quero criar um novo evento")
+            } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "help" && (c.nlu.confidence >= 0.45 && c.nlu.confidence < 0.8)) {
+              sendToVoice("Percebi que precisas de ajuda. Está correto?");
+              confirmationState.isConfirming = true;
+              confirmationState.pendingIntent = "help";
+              confirmationState.data = null;
+            }
+
             if (c.hasOwnProperty("nlu") && c.nlu.intent == "list_all_events" && c.nlu.confidence >= 0.8) {
               list_all_events();
             } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "list_all_events" && (c.nlu.confidence >= 0.45 && c.nlu.confidence < 0.8)) {
-              sendToVoice("Percebi que queres listar todos os eventos. Está correto?");
+              sendToVoice("Percebi que queres listar todos os eventos do teu calendário. Está correto?");
               confirmationState.isConfirming = true;
               confirmationState.pendingIntent = "list_all_events";
               confirmationState.data = null;
@@ -793,13 +808,7 @@
               confirmationState.data = c.nlu;
             }
 
-            if (c.hasOwnProperty("nlu") && c.nlu.intent == "delete_event" && c.nlu.confidence >= 0.8) {
-              let body = {
-                summary: c.nlu.event,
-                date: c.nlu.date
-              };
-              delete_event(body);
-            } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "delete_event" && (c.nlu.confidence >= 0.45 && c.nlu.confidence < 0.8)) {
+            if (c.hasOwnProperty("nlu") && c.nlu.intent == "delete_event") {
               let formattedProvidedDate = new Date(c.nlu.date).toLocaleDateString("pt-PT", { year: "numeric", month: "long", day: "numeric" });
               sendToVoice(`Percebi que queres apagar o evento ${c.nlu.event} do dia ${formattedProvidedDate}. Está correto?`);
               confirmationState.isConfirming = true;
@@ -858,12 +867,8 @@
               confirmationState.data = c.nlu;
             }
 
-            if (c.hasOwnProperty("nlu") && c.nlu.intent == "delete_calendar" && c.nlu.confidence >= 0.8) {
-              let calendarName = c.nlu.calendar;
-
-              delete_calendar(calendarName);
-            } else if (c.hasOwnProperty("nlu") && c.nlu.intent == "delete_calendar" && (c.nlu.confidence >= 0.45 && c.nlu.confidence < 0.8)) {
-              sendToVoice("Percebi que queres apagar um calendário. Está correto?");
+            if (c.hasOwnProperty("nlu") && c.nlu.intent == "delete_calendar") {
+              sendToVoice(`Percebi que queres apagar o calendário ${c.nlu.calendar}. Está correto?`);
               confirmationState.isConfirming = true;
               confirmationState.pendingIntent = "delete_calendar";
               confirmationState.data = c.nlu;

@@ -121,29 +121,43 @@ async def delete_event(criteria: EventDeleteCriteria):
     creds = get_credentials()
     try:
         service = build("calendar", "v3", credentials=creds)
-        now = datetime.datetime.utcnow().isoformat() + "Z"  # 'Z' indicates UTC time
-        events_result = (
-            service.events()
-            .list(
-                calendarId="primary",
-                timeMin=now,
-                maxResults=100,
-                singleEvents=True,
-                orderBy="startTime",
-            )
-            .execute()
-        )
-        events = events_result.get("items", [])
 
-        if not events:
-            return {"message": "No events found."}
+         # List all calendars
+        calendars_result = service.calendarList().list().execute()
+        calendars = calendars_result.get("items", [])
+
+        now = datetime.datetime.utcnow().isoformat() + "Z"  # 'Z' indicates UTC time
+        all_events = []
+
+        # Fetch events from all calendars
+        for calendar in calendars:
+            calendar_id = calendar["id"]
+            if calendar_id == "pt-pt.portuguese#holiday@group.v.calendar.google.com":
+                continue
+
+            events_result = (
+                service.events()
+                .list(
+                    calendarId=calendar_id,
+                    timeMin=now,
+                    singleEvents=True,
+                    orderBy="startTime",
+                )
+                .execute()
+            )
+            events = events_result.get("items", [])
+
+            all_events.extend(events)
+
+        if not all_events:
+            return {"message": "No upcoming events found."}
 
         # Normalize the criteria summary
         normalized_criteria_summary = normalize_string(criteria.summary)
 
         # Find the event to delete based on criteria
         event_to_delete = None
-        for event in events:
+        for event in all_events:
             event_start_date = event["start"].get("dateTime", event["start"].get("date")).split("T")[0]
             normalized_event_summary = normalize_string(event["summary"])
             if normalized_event_summary == normalized_criteria_summary and event_start_date == criteria.date:
